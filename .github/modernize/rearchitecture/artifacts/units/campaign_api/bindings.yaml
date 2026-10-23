@@ -1,0 +1,4 @@
+unit: campaign_api
+bindings:
+  - {type: route-declaration, name: "Campaign CRUD and task update routes", source_loc: "backend/routers/campaigns.py:14", target: "campaign router", must_appear_in_target: true, notes: "Preserve legacy prefixes, methods, IDs, and response models."}
+runtime_config: []

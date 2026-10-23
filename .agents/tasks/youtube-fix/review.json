@@ -1,0 +1,31 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": 1,
+      "title": "Metadata fallback missing album/artist context",
+      "description": "When Ollama fails, the fallback metadata uses only song title and account name, omitting artist_name from the StudioSong model. If the artist_name differs from the account_name, the description will be inconsistent with the actual upload metadata. Pass render.song.artist_name to the fallback metadata."
+    },
+    {
+      "id": 2,
+      "title": "Token decryption error handling gap",
+      "description": "If decrypt_token raises an exception (e.g., invalid encrypted token, corrupted key), it propagates as a generic exception caught by the outer handler, marking the job INTERNAL_ERROR instead of YT_AUTH_FAILED. Add a specific try-except around decrypt_token to set error_code='YT_AUTH_FAILED' and is_retryable=False."
+    },
+    {
+      "id": 3,
+      "title": "Metadata generation timeout not enforced on Windows",
+      "description": "The code attempts to use signal.alarm for timeout, which is Unix-only and silently ignored on Windows. This leaves Ollama calls unbound; a slow or hanging Ollama instance will block the job indefinitely. Either use a cross-platform timeout (e.g., threading, asyncio) or document the limitation."
+    },
+    {
+      "id": 4,
+      "title": "Orphaned render.status transitions race condition (low severity)",
+      "description": "The handler sets render.status='running' at line 566 before checking platform connection. If the connection check fails, render is left in 'running' state with no completed_at timestamp, potentially confusing upstream consumers. The fail block corrects this, but the transient state is persisted to the database."
+    },
+    {
+      "id": 5,
+      "title": "Missing catch for VideoRenderError in song lookup (low severity)",
+      "description": "At line 604, the code raises VideoRenderError('RESOURCE_NOT_FOUND') when song is not found. This is caught as a generic Exception at line 728, setting error_code='INTERNAL_ERROR' instead of 'RESOURCE_NOT_FOUND'. The error classification is wrong."
+    }
+  ],
+  "reviewDoc": "c:/Users/mohak/OneDrive/Desktop/ai-music-marketer-app/.agents/tasks/youtube-fix/review.md"
+}

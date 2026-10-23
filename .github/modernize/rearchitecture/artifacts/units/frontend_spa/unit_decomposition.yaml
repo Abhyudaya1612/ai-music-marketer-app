@@ -1,0 +1,7 @@
+unit: frontend_spa
+commit: false
+candidate_splits:
+  - id: "frontend/app/page.tsx"
+    drivers: [concern_split, lifecycle_split]
+    rationale: "Keep the milestone cohesive; split the access gate, upload state machine, and report presentation only as later product work justifies it."
+    source_slice: {file: frontend/app/page.tsx}

@@ -1,0 +1,141 @@
+flows:
+  - name: song-analysis-request-to-worker-state
+    medium: database
+    key: "songs.status and song_id"
+    writer:
+      unit: song_api
+      source_loc: "backend/routers/songs.py:30"
+    reader:
+      unit: analysis_worker
+      source_loc: "backend/workers.py:21"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "API integration test polls the authorized song/job until the worker persists terminal state."
+    notes: "Song creation commits the row before scheduling the pipeline; the worker uses its own SQLAlchemy session."
+  - name: worker-run-results-to-read-api
+    medium: database
+    key: "runs and related analysis-output rows"
+    writer:
+      unit: analysis_worker
+      source_loc: "backend/workers.py:45"
+    reader:
+      unit: run_api
+      source_loc: "backend/routers/runs.py:11"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "Run API test retrieves the latest run and all persisted structured agent outputs."
+    notes: "Worker persists run status, logs, intelligence, segments, content, strategy, metrics, and optimization output."
+  - name: private-upload-to-asset-verification
+    medium: database-and-private-filesystem
+    key: "v1_media_assets.id/storage_key/status/checksum_sha256"
+    writer:
+      unit: song_api
+      source_loc: "backend/routers/v1.py:298"
+    reader:
+      unit: analysis_worker
+      source_loc: "backend/services/job_runner.py:80"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "The upload integration test verifies size, private storage, job ownership, and ready/failed asset status."
+    notes: "Upload completion creates an owner-scoped job; the worker decodes the original through FFprobe before marking it ready."
+  - name: analysis-job-to-versioned-intelligence-and-report
+    medium: database
+    key: "v1_jobs.subject_id, v1_analyses.intelligence_json, v1_analysis_reports.payload"
+    writer:
+      unit: analysis_worker
+      source_loc: "backend/services/job_runner.py:105"
+    reader:
+      unit: song_api
+      source_loc: "backend/routers/v1.py:373"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "The v1 integration test polls the job and reads typed Song Intelligence plus an evidence-reference-validated report."
+    notes: "Each analysis version remains associated with its job, source checksum, and report-provider metadata."
+  - name: completed-analysis-to-dashboard-agent-pipeline
+    medium: database
+    key: "v1_analyses.intelligence_json and v1_agent_pipeline_runs.analysis_id/owner_id/results_json/created_at"
+    writer:
+      unit: song_api
+      source_loc: "backend/routers/v1.py:962"
+    reader:
+      unit: frontend_spa
+      source_loc: "frontend/app/page.tsx:955"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "The v1 API test runs the pipeline on a completed authorized analysis, reads the persisted outputs, blocks reruns after consent withdrawal, and rejects another owner."
+    notes: "The deterministic pipeline uses stored song metadata, structured tempo/key estimates, and only derived lyric candidates. Re-running replaces the latest result for that analysis; analytics remain simulated and no campaign action executes."
+  - name: video-render-request-to-worker
+    medium: database-and-in-process-background-task
+    key: "v1_jobs.task_type/subject_id and v1_video_renders.job_id/status/stage/progress_percent"
+    writer:
+      unit: song_api
+      source_loc: "backend/routers/v1.py:1051"
+    reader:
+      unit: analysis_worker
+      source_loc: "backend/services/job_runner.py:283"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "API integration test creates a render and polls its owner-scoped persisted state through terminal success/failure."
+    notes: "The request commits render/job/idempotency state before FastAPI BackgroundTasks schedules the worker; rights and both required consents are checked again by the worker."
+  - name: video-render-output-to-owner-download
+    medium: private-filesystem-and-database
+    key: "v1_video_renders.id/status/output_metadata_json/output_checksum_sha256 and UUID-backed render.mp4"
+    writer:
+      unit: analysis_worker
+      source_loc: "backend/services/job_runner.py:283"
+    reader:
+      unit: song_api
+      source_loc: "backend/routers/v1.py:1179"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "API integration test verifies owner-only status/download, private no-store MP4 response, output integrity metadata, and rejection before success."
+    notes: "The worker records success only after local output validation; the authenticated API streams the file only when owner, terminal status, and private path checks pass."
+  - name: platform-consent-to-oauth-callback
+    medium: database-and-browser-oauth-redirect
+    key: "v1_consent_records owner/type/granted; v1_platform_oauth_states owner/provider/state_hash/expires_at/consumed_at"
+    writer:
+      unit: song_api
+      source_loc: "backend/routers/v1.py:388"
+    reader:
+      unit: platform_connections
+      source_loc: "backend/routers/connections.py:176"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "OAuth API test rejects initiation without consent, validates one-time state, and denies callback completion after withdrawal."
+    notes: "The callback does not require a browser bearer token; its expiring one-time state maps back to the initiating owner and provider."
+  - name: platform-connection-to-owner-dashboard
+    medium: database
+    key: "v1_platform_connections.owner_id/provider/status/account_id/account_name/granted_scopes_json"
+    writer:
+      unit: platform_connections
+      source_loc: "backend/routers/connections.py:127"
+    reader:
+      unit: frontend_spa
+      source_loc: "frontend/app/page.tsx"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "API tests ensure list responses are owner-scoped and token-free; frontend lint/typecheck/build validates typed status controls."
+    notes: "Fernet-encrypted credentials remain server-side; only configured/connected/expired state, account identity, scopes, and expiry reach the browser."
+  - name: consent-withdrawal-to-local-token-purge
+    medium: database
+    key: "v1_consent_records and v1_platform_connections encrypted token fields/status; pending v1_platform_oauth_states"
+    writer:
+      unit: song_api
+      source_loc: "backend/routers/v1.py:430"
+    reader:
+      unit: platform_connections
+      source_loc: "backend/routers/connections.py:162"
+    pairing: matched
+    must_preserve: true
+    must_confirm: null
+    verification_hint: "OAuth API test verifies consent withdrawal clears access/refresh token ciphertext, account data, and pending OAuth states."
+    notes: "Local token deletion prevents this application from using the grant; provider-side revocation remains a separate user action."

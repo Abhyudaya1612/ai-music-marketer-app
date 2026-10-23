@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.db
+.env
+.venv/
+node_modules/
+.next/
+frontend/.next/
+frontend/node_modules/
+private-media/

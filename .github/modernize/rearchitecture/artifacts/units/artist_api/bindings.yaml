@@ -1,0 +1,5 @@
+unit: artist_api
+bindings:
+  - {type: route-declaration, name: "GET/POST /api/artist/profile", source_loc: "backend/routers/artist.py:14", target: "profile routes", must_appear_in_target: true, notes: "GET creates default profile if absent."}
+  - {type: route-declaration, name: "GET/POST /api/artist/calendar", source_loc: "backend/routers/artist.py:47", target: "calendar routes", must_appear_in_target: true, notes: "List sorted by scheduled time; create validates optional references."}
+runtime_config: []

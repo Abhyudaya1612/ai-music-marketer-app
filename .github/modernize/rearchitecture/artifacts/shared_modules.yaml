@@ -1,0 +1,215 @@
+modules:
+  - name: orm_models
+    kind: god-class
+    source_loc: "backend/models.py:23"
+    used_by_units: [song_api, campaign_api, artist_api, run_api, stats_api, analysis_worker]
+    fields:
+      - {name: Song, type: "SQLAlchemy ORM model"}
+      - {name: CampaignPlan, type: "SQLAlchemy ORM model"}
+      - {name: CampaignTask, type: "SQLAlchemy ORM model"}
+      - {name: ArtistProfile, type: "SQLAlchemy ORM model"}
+      - {name: ReleaseCalendarEntry, type: "SQLAlchemy ORM model"}
+      - {name: Run, type: "SQLAlchemy ORM model"}
+      - {name: SongIntelligenceRow, type: "SQLAlchemy ORM model"}
+      - {name: AudienceSegmentRow, type: "SQLAlchemy ORM model"}
+      - {name: ContentPieceRow, type: "SQLAlchemy ORM model"}
+      - {name: MarketingStrategyRow, type: "SQLAlchemy ORM model"}
+      - {name: PerformanceMetricsRow, type: "SQLAlchemy ORM model"}
+      - {name: OptimizationReportRow, type: "SQLAlchemy ORM model"}
+      - {name: FinalStrategyRow, type: "SQLAlchemy ORM model"}
+    god_class: true
+    split_candidate: true
+    migration_strategy: split
+    notes: "One file contains 13 persistent entities across catalog, campaign, artist, and analysis domains."
+  - name: api_schemas
+    kind: dto
+    source_loc: "backend/schemas.py:8"
+    used_by_units: [song_api, campaign_api, artist_api, run_api, stats_api]
+    fields:
+      - {name: SongCreate, type: "Pydantic model"}
+      - {name: SongOut, type: "Pydantic model"}
+      - {name: RunOut, type: "Pydantic model"}
+      - {name: CampaignPlanOut, type: "Pydantic model"}
+      - {name: CampaignTaskOut, type: "Pydantic model"}
+      - {name: CampaignPlanCreate, type: "Pydantic model"}
+      - {name: ArtistProfileCreate, type: "Pydantic model"}
+      - {name: ReleaseCalendarEntryCreate, type: "Pydantic model"}
+      - {name: StatsOut, type: "Pydantic model"}
+    god_class: false
+    split_candidate: true
+    migration_strategy: split
+    notes: "Shared HTTP DTO module spanning several router domains."
+  - name: database_session
+    kind: config
+    source_loc: "backend/database.py:1"
+    used_by_units: [song_api, campaign_api, artist_api, run_api, stats_api, analysis_worker]
+    fields:
+      - {name: Base, type: "SQLAlchemy declarative base"}
+      - {name: engine, type: "SQLAlchemy Engine"}
+      - {name: SessionLocal, type: "sessionmaker"}
+      - {name: init_db, type: "function"}
+      - {name: get_db, type: "generator dependency"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: wrap
+    notes: "Common persistence lifecycle and session dependency."
+  - name: application_settings
+    kind: config
+    source_loc: "backend/config.py:1"
+    used_by_units: [web_entry, song_api, analysis_worker, platform_connections]
+    fields:
+      - {name: app_name, type: str}
+      - {name: environment, type: str}
+      - {name: database_url, type: str}
+      - {name: cors_origins, type: str}
+      - {name: cors_origin_list, type: "property[list[str]]"}
+      - {name: api_token, type: str}
+      - {name: auth_user_id, type: str}
+      - {name: media_storage_path, type: str}
+      - {name: max_upload_bytes, type: int}
+      - {name: max_audio_duration_seconds, type: int}
+      - {name: ffmpeg_path, type: str}
+      - {name: ffprobe_path, type: str}
+      - {name: ai_provider, type: str}
+      - {name: openrouter_api_key, type: str}
+      - {name: openrouter_model, type: str}
+      - {name: token_encryption_key, type: SecretStr}
+      - {name: frontend_url, type: str}
+      - {name: youtube_oauth_client_id, type: str}
+      - {name: youtube_oauth_client_secret, type: SecretStr}
+      - {name: youtube_oauth_redirect_uri, type: str}
+      - {name: instagram_oauth_client_id, type: str}
+      - {name: instagram_oauth_client_secret, type: SecretStr}
+      - {name: instagram_oauth_redirect_uri, type: str}
+      - {name: facebook_oauth_client_id, type: str}
+      - {name: facebook_oauth_client_secret, type: SecretStr}
+      - {name: facebook_oauth_redirect_uri, type: str}
+      - {name: meta_graph_api_version, type: str}
+    god_class: false
+    split_candidate: false
+    migration_strategy: wrap
+    notes: "Environment-backed settings shared by application setup and persistence."
+  - name: versioned_song_domain
+    kind: domain-and-contracts
+    source_loc: "backend/domain/models.py:32"
+    used_by_units: [song_api, analysis_worker, platform_connections]
+    fields:
+      - {name: StudioSong, type: "Owner-scoped SQLAlchemy ORM model"}
+      - {name: ArtistWorkspaceProfile, type: "Owner-scoped artist context and onboarding ORM model"}
+      - {name: RightsDeclaration, type: "Owner-scoped per-song rights basis declaration"}
+      - {name: ConsentRecord, type: "Owner-scoped append-only consent and withdrawal event"}
+      - {name: MediaAsset, type: "Private media metadata and checksum"}
+      - {name: AnalysisJob, type: "Persisted verification and analysis job"}
+      - {name: SongAnalysis, type: "Versioned Song Intelligence record"}
+      - {name: SongAnalysisLyrics, type: "Derived local lyric observations without retained full text"}
+      - {name: AgentPipelineRun, type: "Latest persisted deterministic five-agent output per owner-scoped analysis"}
+      - {name: AnalysisReport, type: "Provider- and prompt-versioned A&R report"}
+      - {name: ReleasePlan, type: "Owner-scoped release calendar draft and approval state"}
+      - {name: VideoRender, type: "Owner-scoped private video-render job, settings, scene plan, provenance, and output metadata"}
+      - {name: PlatformConnection, type: "Owner-scoped provider account identity and encrypted OAuth access/refresh tokens"}
+      - {name: PlatformOAuthState, type: "Owner/provider-bound, hashed, one-time expiring OAuth state"}
+      - {name: IdempotencyRecord, type: "Owner-scoped request replay record"}
+      - {name: UploadIntentRequest, type: "Pydantic upload contract"}
+      - {name: UploadIntentResponse, type: "Pydantic upload contract"}
+      - {name: ArtistProfileUpsert, type: "Pydantic owner-scoped artist profile write contract"}
+      - {name: ArtistProfileOut, type: "Pydantic artist profile response"}
+      - {name: SongListOut, type: "Pydantic cursor-paginated song catalog response"}
+      - {name: ConsentCreate, type: "Pydantic scoped consent grant contract"}
+      - {name: ConsentOut, type: "Pydantic consent event response"}
+      - {name: ConsentListOut, type: "Pydantic consent history response"}
+      - {name: ConsentWithdrawalOut, type: "Pydantic consent withdrawal response"}
+      - {name: RightsDeclarationCreate, type: "Pydantic recording/composition rights attestation"}
+      - {name: RightsDeclarationOut, type: "Pydantic rights declaration response"}
+      - {name: RightsDeclarationListOut, type: "Pydantic rights declaration history response"}
+      - {name: AnalysisRequest, type: "Pydantic analysis contract"}
+      - {name: AnalysisAccepted, type: "Pydantic job acceptance contract"}
+      - {name: SongIntelligenceOut, type: "Versioned intelligence response"}
+      - {name: AgentPipelineOut, type: "Persisted deterministic agent outputs with heuristic/simulation limitations"}
+      - {name: AudienceHypothesesOut, type: "Evidence-linked, uncertainty-labeled audience hypothesis response"}
+      - {name: ReleasePlanCreate, type: "Pydantic release plan create contract"}
+      - {name: ReleasePlanPatch, type: "Pydantic release plan draft update contract"}
+      - {name: ReleasePlanTaskOut, type: "Dated or relative release-stage calendar task"}
+      - {name: ReleasePlanOut, type: "Release plan with draft/approved status and non-execution limitations"}
+      - {name: ReleasePlanListOut, type: "Bounded release plan list response"}
+      - {name: VideoRenderRequest, type: "Pydantic approved-format render request"}
+      - {name: VideoRenderOut, type: "Pydantic owner-scoped render status and provenance response"}
+      - {name: VideoRenderListOut, type: "Pydantic bounded render list response"}
+      - {name: PlatformConnectionOut, type: "Pydantic token-free owner connection status"}
+      - {name: PlatformConnectionListOut, type: "Pydantic fixed-provider connection registry"}
+      - {name: OAuthStartOut, type: "Pydantic authorization URL and state expiry"}
+      - {name: ARReportOut, type: "Evidence-claim report response"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: keep_separate
+    notes: "New v1 domain and contract types remain separate from legacy ORM models and DTOs."
+  - name: private_media_storage
+    kind: service
+    source_loc: "backend/services/storage.py:1"
+    used_by_units: [song_api, analysis_worker]
+    fields:
+      - {name: asset_directory, type: "UUID-guarded private asset directory resolver"}
+      - {name: original_path, type: "Private immutable uploaded source path"}
+      - {name: derived_path, type: "Private derived analysis audio path"}
+      - {name: render_output_path, type: "Private MP4 output path"}
+      - {name: write_upload, type: "Bounded streaming upload and SHA-256 persistence"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: keep_separate
+    notes: "Resolves all song media under the configured private root; rendered files are not served as public static assets."
+  - name: local_video_renderer
+    kind: service
+    source_loc: "backend/services/video_rendering.py:16"
+    used_by_units: [song_api, analysis_worker]
+    fields:
+      - {name: renderer_capabilities, type: "Local FFmpeg filter, encoder, and font capability check"}
+      - {name: build_scene_plan, type: "Structured three-part render plan for an approved format"}
+      - {name: render_motion_graphics, type: "Synchronous FFmpeg rendering, progress callbacks, MP4 validation, checksum, and provenance"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: keep_separate
+    notes: "Current renderer uses deterministic local waveform/spectrum graphics and title cards; optional AI-generated footage is not available and is not claimed."
+  - name: platform_oauth
+    kind: service
+    source_loc: "backend/services/platform_oauth.py:1"
+    used_by_units: [song_api, platform_connections]
+    fields:
+      - {name: PLATFORM_PROVIDERS, type: "Fixed supported provider tuple"}
+      - {name: provider_is_configured, type: "Credential and encryption-key readiness check"}
+      - {name: build_authorization_url, type: "Provider-specific least-privilege OAuth URL builder"}
+      - {name: exchange_authorization_code, type: "Google, Instagram Login, and Facebook OAuth exchange and read-only account identity lookup"}
+      - {name: encrypt_token, type: "Fernet-authenticated encryption for persisted provider tokens"}
+      - {name: decrypt_token, type: "Authenticated decryption for future server-side read-only API use"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: keep_separate
+    notes: "Requests youtube.readonly, instagram_business_basic, or public_profile only; client secrets stay server-side and no publishing scopes are enabled."
+  - name: audience_hypotheses
+    kind: service
+    source_loc: "backend/services/audience.py:1"
+    used_by_units: [song_api]
+    fields:
+      - {name: build_audience_hypotheses, type: "Local evidence-linked hypothesis builder; no demographic or platform-affinity inference"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: keep_separate
+    notes: "Uses song-specific lyric themes and artist-selected context; emits an empty hypothesis list when song evidence is absent."
+  - name: release_plan_builder
+    kind: service
+    source_loc: "backend/services/release_planning.py:1"
+    used_by_units: [song_api]
+    fields:
+      - {name: build_release_tasks, type: "Pure relative-date release calendar task builder"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: keep_separate
+    notes: "Creates a draft organic-first checklist only; no publishing, distributor, or spend execution."
+  - name: consent_state
+    kind: service
+    source_loc: "backend/services/consent.py:7"
+    used_by_units: [song_api, analysis_worker, platform_connections]
+    fields:
+      - {name: has_active_consent, type: "Owner- and scope-aware latest consent decision lookup"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: keep_separate
+    notes: "A song-specific latest decision overrides a workspace-wide grant; revocation is represented by a new false decision."

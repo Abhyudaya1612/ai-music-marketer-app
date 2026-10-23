@@ -1,0 +1,10 @@
+unit: analysis_worker
+bindings:
+  - {type: convention, name: "FastAPI BackgroundTasks → daemon thread", source_loc: "backend/routers/songs.py:110", target: "execute_pipeline", must_appear_in_target: true, notes: "Current task starts a daemon thread and joins it; target job lifecycle must be durable and must not block request acceptance."}
+  - {type: convention, name: "Versioned in-process job runner", source_loc: "backend/services/job_runner.py:45", target: "run_v1_job", must_appear_in_target: true, notes: "Persist job transitions and safe failures; recheck processing and third-party AI consent without changing the legacy worker."}
+  - {type: convention, name: "Consent policy lookup", source_loc: "backend/services/consent.py:7", target: "has_active_consent", must_appear_in_target: true, notes: "Worker rechecks song-scoped consent before processing and before any external report-provider use."}
+  - {type: convention, name: "Asynchronous private video-render job", source_loc: "backend/services/job_runner.py:283", target: "_video_render_job", must_appear_in_target: true, notes: "Recheck rights and processing/promotional consent at startup, during progress, and before completion; persist job/render progress and validated output metadata."}
+  - {type: convention, name: "Local FFmpeg motion-graphics renderer", source_loc: "backend/services/video_rendering.py:241", target: "render_motion_graphics", must_appear_in_target: true, notes: "Render deterministic waveform/spectrum graphics and synchronized original audio as private MP4; do not substitute optional cinematic AI footage without an available, approved local model."}
+  - {type: di-registration, name: "Worker-owned SQLAlchemy session", source_loc: "backend/workers.py:14", target: "SessionLocal", must_appear_in_target: true, notes: "Worker can own a session or use a caller-provided one."}
+runtime_config:
+  - {key: APP_DATABASE_URL, source_loc: "backend/config.py:11", source: env, default_value: "sqlite:///./music_marketer.db", must_appear_in_target: true, notes: "Database URL must be configurable and existing local data preserved."}

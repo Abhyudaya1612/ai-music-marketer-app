@@ -1,0 +1,6 @@
+unit: frontend_spa
+bindings:
+  - {type: route-declaration, name: "Next.js App Router studio page", source_loc: "frontend/app/page.tsx", target: "private workspace, artist onboarding/dashboard, audio-analysis, video-render, and read-only social-connection flow", must_appear_in_target: true, notes: "Desktop-first UI with session-scoped token access, profile setup/edit, paginated catalog, upload, analysis/report, separate promotional/platform consent, render progress, private MP4 download, provider OAuth redirect, and token-free connection status."}
+  - {type: convention, name: "Versioned API client", source_loc: "frontend/lib/api.ts", target: "apiRequest", must_appear_in_target: true, notes: "Adds bearer authentication, safe error parsing, and same-host LAN API discovery."}
+  - {type: convention, name: "Typed API contracts", source_loc: "frontend/lib/contracts.ts", target: "ArtistProfile/ArtistProfilePayload/Song/SongList/Job/Intelligence/ARReport/VideoRender/VideoRenderList/PlatformConnection/OAuthStart", must_appear_in_target: true, notes: "Keep frontend response contracts aligned with the backend v1 Pydantic models; never model or store OAuth token values in frontend types."}
+runtime_config: []

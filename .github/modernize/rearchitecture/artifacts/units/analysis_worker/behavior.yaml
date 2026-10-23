@@ -1,0 +1,57 @@
+unit: analysis_worker
+branches:
+  - source_loc: "backend/workers.py:20"
+    condition: "Song ID is missing."
+    behavior: "Raise ValueError and close an internally-created database session."
+    must_preserve: true
+  - source_loc: "backend/workers.py:33"
+    condition: "Pipeline raises an exception."
+    behavior: "Set run and song status to failed, retain error text in legacy run, set finish time, and commit."
+    must_preserve: true
+  - source_loc: "backend/services/job_runner.py:85"
+    condition: "Processing rights or scoped processing/storage consent has been withdrawn after a v1 job was queued."
+    behavior: "Block asset verification or fail analysis before processing; fall back to the offline report if third-party AI consent is no longer active."
+    must_preserve: true
+  - source_loc: "backend/services/job_runner.py:283"
+    condition: "The queued job has task_type video_render."
+    behavior: "Load the owner-scoped render, song, and verified original; recheck rights and audio-processing/promotional consent before rendering, during progress updates, and before marking success. Fail safely if authorization or source data is unavailable."
+    must_preserve: true
+side_effects:
+  - source_loc: "backend/workers.py:25"
+    effect: "Create a running run and commit it before running agents."
+    must_preserve: true
+  - source_loc: "backend/workers.py:44"
+    effect: "Persist pipeline outputs and terminal status."
+    must_preserve: true
+  - source_loc: "backend/services/job_runner.py:85"
+    effect: "Recheck rights, processing consent, and derived-analysis-storage consent in the worker; permit an external report provider only while the separate third-party AI consent is active."
+    must_preserve: true
+  - source_loc: "backend/services/job_runner.py:170"
+    effect: "Persist only local-derived lyric themes and repeated-line candidates; derive neutral audio segments only from detected silence gaps; exclude lyric text and lyrical hook text from OpenRouter report context."
+    must_preserve: true
+  - source_loc: "backend/services/job_runner.py:283"
+    effect: "Run local FFmpeg from the render's private directory, persist stage/progress, validate the completed MP4, and record scene plan, render settings, source provenance, output metadata, checksum, byte size, and completion time."
+    must_preserve: true
+error_paths:
+  - source_loc: "backend/workers.py:33"
+    trigger: "Pipeline or output persistence raises."
+    outcome: "Mark legacy run/song failed and persist finish time."
+    contract: "Run status failed; error stored for legacy run response."
+    must_preserve: true
+  - source_loc: "backend/services/job_runner.py:85"
+    trigger: "Processing or derived-analysis-storage authorization is missing or was withdrawn before queued work starts."
+    outcome: "Mark the v1 job failed and prevent audio processing; never send report data externally without active consent."
+    contract: "CONSENT_REQUIRED"
+    must_preserve: true
+  - source_loc: "backend/services/job_runner.py:319"
+    trigger: "Video-render rights or promotional consent is missing/withdrawn, or source audio is unavailable."
+    outcome: "Mark the render/job failed with a safe error code; do not leave a completed downloadable render after authorization is withdrawn."
+    contract: "CONSENT_REQUIRED or RESOURCE_NOT_FOUND"
+    must_preserve: true
+concurrency:
+  model: thread-pool
+  tx_boundary:
+    source_loc: "backend/services/job_runner.py:283"
+    scope: "Legacy running status is committed before analysis and outputs/status commit at completion. Versioned jobs persist running/progress state before and during work; render metadata and terminal job/render state commit on completion."
+    isolation: "Database default"
+    must_preserve: true

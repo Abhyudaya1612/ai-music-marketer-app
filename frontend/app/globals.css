@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --canvas: #101214;
+  --panel: #181b1e;
+  --panel-raised: #202428;
+  --line: #343a3d;
+  --muted: #a1a9a5;
+  --text: #f2f3eb;
+  --acid: #d7fb58;
+  --coral: #ff8868;
+}
+
+* { box-sizing: border-box; }
+html { min-width: 360px; background: var(--canvas); }
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible, a:focus-visible {
+  outline: 2px solid var(--acid);
+  outline-offset: 3px;
+}
+::selection { background: var(--acid); color: #111; }
+.noise-grid {
+  background-image: radial-gradient(rgba(255,255,255,.075) .65px, transparent .65px);
+  background-size: 8px 8px;
+}
+.meter-track { background: linear-gradient(90deg, var(--acid) 0 64%, #454b47 64%); }
+.soft-shadow { box-shadow: 0 28px 80px rgba(0, 0, 0, .28); }
+.hairline { border-color: var(--line); }

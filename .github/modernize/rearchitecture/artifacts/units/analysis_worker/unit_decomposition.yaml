@@ -1,0 +1,7 @@
+unit: analysis_worker
+commit: false
+candidate_splits:
+  - id: "backend/workers.py:15-89"
+    drivers: [concern_split, lifecycle_split]
+    rationale: "The worker handles job lifecycle, orchestration invocation, persistence of seven outputs, and terminal error handling."
+    source_slice: {file: backend/workers.py, lines: [15, 89]}

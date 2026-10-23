@@ -1,0 +1,4 @@
+unit: stats_api
+bindings:
+  - {type: route-declaration, name: "GET /api/stats", source_loc: "backend/routers/stats.py:13", target: "dashboard_stats", must_appear_in_target: true, notes: "Returns StatsOut including currently simulated campaign metrics."}
+runtime_config: []

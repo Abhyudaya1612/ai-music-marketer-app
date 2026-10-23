@@ -1,0 +1,29 @@
+unit: web_entry
+branches:
+  - source_loc: "backend/main.py:106"
+    condition: "GET /api/health"
+    behavior: "Return status ok and configured app/environment values."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py"
+    condition: "GET /api/v1/health, /api/v1/ready, or /api/v1/capabilities"
+    behavior: "Return liveness, database readiness, or only the audio/report capabilities actually available."
+    must_preserve: true
+  - source_loc: "backend/main.py:112"
+    condition: "GET /"
+    behavior: "Return API service metadata; the Next.js browser app is served separately."
+    must_preserve: true
+side_effects:
+  - source_loc: "backend/main.py:21"
+    effect: "Initialize ORM tables at application startup."
+    must_preserve: true
+  - source_loc: "backend/main.py:31"
+    effect: "Assign a request ID to each request and return it in the response header."
+    must_preserve: true
+error_paths: []
+concurrency:
+  model: async
+  tx_boundary:
+    source_loc: "backend/main.py:21"
+    scope: "Startup calls init_db before serving requests; route handlers are registered on the FastAPI app."
+    isolation: "Database default"
+    must_preserve: true

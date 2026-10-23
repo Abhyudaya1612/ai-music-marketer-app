@@ -1,0 +1,82 @@
+unit: song_api
+branches:
+  - source_loc: "backend/routers/songs.py:42"
+    condition: "Song ID does not exist."
+    behavior: "Return 404 Song not found."
+    must_preserve: true
+  - source_loc: "backend/routers/songs.py:97"
+    condition: "Song ID does not exist during reanalysis."
+    behavior: "Return 404 Song not found; otherwise set status analyzing and queue a worker."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:474"
+    condition: "A private audio upload or analysis is requested."
+    behavior: "Require an owner-scoped rights declaration and active audio-processing consent for upload; require separate derived-analysis-storage consent for analysis. Analyze optional artist-supplied lyrics locally, persist only derived observations, and keep full submitted text out of external-provider requests. External AI report permission is checked separately and the worker rechecks it before provider use."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:810"
+    condition: "The authenticated owner requests audience hypotheses for a completed analysis."
+    behavior: "Build hypotheses only from available song-specific evidence; expose evidence, uncertainty, artist-selected context, and a manual validation experiment without demographic or platform prediction."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:871"
+    condition: "The owner creates a release plan for an owned song."
+    behavior: "Create an idempotent organic-first draft calendar with relative stages, dependencies, optional target date and goal; approval changes plan state only and cannot publish or spend."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:309"
+    condition: "A client reads public v1 capabilities."
+    behavior: "Report video-render availability from local FFmpeg filters, encoders, and font capability checks and report OAuth connection readiness only when provider credentials and a valid token-encryption key are configured."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:1051"
+    condition: "The owner requests a supported video render for an owned song."
+    behavior: "Require a current rights declaration, active audio-processing and promotional-media consent, and an owned verified original audio asset; create an idempotent queued render and job, then schedule the worker."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:430"
+    condition: "The owner withdraws workspace platform-account connection consent."
+    behavior: "Append the consent withdrawal, clear all owner-scoped local provider tokens and account identity, and invalidate all unconsumed OAuth states in the same transaction."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:1164"
+    condition: "The owner reads or downloads a video render."
+    behavior: "Expose only owner-scoped render status; permit private MP4 download only after success and when the private output file exists."
+    must_preserve: true
+side_effects:
+  - source_loc: "backend/routers/songs.py:31"
+    effect: "Commit created song before scheduling pipeline work."
+    must_preserve: true
+  - source_loc: "backend/routers/songs.py:83"
+    effect: "Create campaign and up to ten tasks under the song."
+    must_preserve: true
+  - source_loc: "backend/routers/songs.py:94"
+    effect: "Delete song; related ORM rows cascade."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:302"
+    effect: "Append scoped consent grants and withdrawal events; do not treat audio-processing consent as model-training or third-party AI consent."
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:1051"
+    effect: "Persist render settings, a structured scene plan, source provenance, and an idempotency record before enqueueing video-render work."
+    must_preserve: true
+error_paths:
+  - source_loc: "backend/routers/songs.py:42"
+    trigger: "Song lookup misses."
+    outcome: "HTTP 404."
+    contract: "404 Song not found"
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:474"
+    trigger: "A required song rights declaration, audio-processing consent, or derived-analysis-storage consent is missing or withdrawn."
+    outcome: "Reject the upload/analysis request with a safe 403 API error; the worker records a blocked/failed state if authorization is withdrawn after enqueue."
+    contract: "RIGHTS_DECLARATION_REQUIRED or CONSENT_REQUIRED"
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:1051"
+    trigger: "Rights, processing/promotional consent, verified source audio, renderer capability, or idempotency preconditions are not met."
+    outcome: "Return a safe machine-readable authorization, readiness, capability, or idempotency error; do not enqueue unauthorized work."
+    contract: "RIGHTS_DECLARATION_REQUIRED, CONSENT_REQUIRED, RESOURCE_NOT_READY, VIDEO_RENDERER_UNAVAILABLE, or IDEMPOTENCY_CONFLICT"
+    must_preserve: true
+  - source_loc: "backend/routers/v1.py:1192"
+    trigger: "The render is incomplete, the private output is missing, or the requested render is not owned by the caller."
+    outcome: "Return a safe not-ready, missing-output, or not-found API error without exposing another owner's media."
+    contract: "VIDEO_NOT_READY, VIDEO_OUTPUT_MISSING, or RESOURCE_NOT_FOUND"
+    must_preserve: true
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "backend/routers/songs.py:31"
+    scope: "Song creation commits before the background task is enqueued; song campaign and task rows are committed together."
+    isolation: "Database default"
+    must_preserve: true

@@ -1,0 +1,28 @@
+unit: artist_api
+branches:
+  - source_loc: "backend/routers/artist.py:14"
+    condition: "No artist profile exists."
+    behavior: "Create and return a default profile with default voice, audience, goals, and markets."
+    must_preserve: true
+  - source_loc: "backend/routers/artist.py:52"
+    condition: "Optional song_id or campaign_id does not exist."
+    behavior: "Return 404 before creating calendar entry."
+    must_preserve: true
+side_effects:
+  - source_loc: "backend/routers/artist.py:26"
+    effect: "Persist default profile when the profile read finds none."
+    must_preserve: true
+  - source_loc: "backend/routers/artist.py:42"
+    effect: "Persist profile values on POST."
+    must_preserve: true
+  - source_loc: "backend/routers/artist.py:74"
+    effect: "Persist release-calendar entry."
+    must_preserve: true
+error_paths: []
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "backend/routers/artist.py:42"
+    scope: "Each profile/calendar write is committed before returning."
+    isolation: "Database default"
+    must_preserve: true

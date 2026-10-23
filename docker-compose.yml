@@ -1,0 +1,52 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENVIRONMENT: presentation
+      APP_API_TOKEN: ${APP_API_TOKEN:?Set APP_API_TOKEN in .env}
+      APP_AUTH_USER_ID: ${APP_AUTH_USER_ID:-local-artist}
+      APP_DATABASE_URL: sqlite:////data/music_marketer.db
+      APP_MEDIA_STORAGE_PATH: /data/private-media
+      APP_CORS_ORIGINS: ${APP_CORS_ORIGINS:-http://localhost:3000}
+      APP_AI_PROVIDER: ${APP_AI_PROVIDER:-mock}
+      APP_OPENROUTER_API_KEY: ${APP_OPENROUTER_API_KEY:-}
+      APP_OPENROUTER_MODEL: ${APP_OPENROUTER_MODEL:-}
+    volumes:
+      - app-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    mem_limit: 1g
+    cpus: "1"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  app-data:

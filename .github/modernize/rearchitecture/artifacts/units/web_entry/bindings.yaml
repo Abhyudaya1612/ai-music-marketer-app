@@ -1,0 +1,10 @@
+unit: web_entry
+bindings:
+  - {type: route-declaration, name: "GET /api/health", source_loc: "backend/main.py:106", target: "health", must_appear_in_target: true, notes: "Legacy health response remains unchanged."}
+  - {type: route-declaration, name: "GET /", source_loc: "backend/main.py:112", target: "index", must_appear_in_target: true, notes: "Returns API service metadata; Next.js runs as a separate service."}
+  - {type: filter, name: "Request-ID and CORS middleware", source_loc: "backend/main.py:31", target: "FastAPI app", must_appear_in_target: true, notes: "Request IDs are returned consistently; browser origins are environment-configured."}
+  - {type: route-declaration, name: "Router registration", source_loc: "backend/main.py:103", target: "legacy routers and /api/v1 router", must_appear_in_target: true, notes: "Legacy endpoints and versioned first-slice routes are reachable."}
+runtime_config:
+  - {key: APP_ENVIRONMENT, source_loc: "backend/config.py:9", source: env, default_value: development, must_appear_in_target: true, notes: "Application environment label."}
+  - {key: APP_CORS_ORIGINS, source_loc: "backend/config.py:12", source: env, default_value: "http://localhost:3000,http://localhost:8000", must_appear_in_target: true, notes: "Allowed browser origins; include the exact LAN origin for other devices."}
+  - {key: APP_API_TOKEN, source_loc: "backend/config.py", source: env, default_value: empty, must_appear_in_target: true, notes: "Required for private v1 routes; never expose it to frontend build variables."}

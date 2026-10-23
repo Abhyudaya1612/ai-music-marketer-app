@@ -1,0 +1,71 @@
+unit: frontend_spa
+branches:
+  - source_loc: "frontend/app/page.tsx"
+    condition: "No valid studio token is present in the browser session."
+    behavior: "Show a private access screen and validate the submitted token before opening the workspace."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    condition: "The authenticated workspace has no owner-scoped artist profile."
+    behavior: "Require profile onboarding before exposing dashboard or song-analysis navigation; allow the owner to edit the saved profile."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    condition: "The owner opens the dashboard."
+    behavior: "Show artist context and an owner-scoped, cursor-paginated song catalog without implying unavailable integrations or metrics."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    condition: "The artist starts a new private upload."
+    behavior: "Collect recording and composition rights bases, optionally accept artist-supplied lyrics for local analysis without retaining the full text, require separate upload/processing and derived-analysis-storage confirmations, and offer a distinct opt-in for sending structured data to the configured third-party AI provider."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    condition: "Artist starts an audio analysis."
+    behavior: "Create a song, obtain a short-lived upload intent, upload audio, complete asset verification, request analysis, and poll the durable job."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    condition: "Analysis and report generation succeed."
+    behavior: "Render measured and estimated feature provenance, evidence-grounded A&R claims, and explicit limitations."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    condition: "The artist elects to create an approved music visualizer or full music video."
+    behavior: "Require a separate promotional-media consent, submit an idempotent render request for the selected owned song/audio asset, poll render progress, show safe failure state, and offer the private MP4 download only when complete."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    condition: "The artist elects to connect YouTube, Instagram, or Facebook."
+    behavior: "Require a separate workspace platform-account consent before provider redirect; explain read-only scopes and account eligibility; show token-free configured/connected/expired state; permit local token removal; surface safe callback results without implying publishing is available."
+    must_preserve: true
+side_effects:
+  - source_loc: "frontend/lib/api.ts"
+    effect: "Send bearer-authenticated requests to the versioned API; upload the selected original audio only to the private local API."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    effect: "Keep the studio token and last song/analysis identifiers in sessionStorage for this browser session."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    effect: "Load and save artist profile and song-list data through the authenticated v1 API."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    effect: "Record scoped audio-processing and derived-analysis-storage consent with song rights declarations; only create a third-party AI consent when the artist explicitly opts in. Show consent history and support withdrawal."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    effect: "Record a separate promotional_asset_generation consent and retain the active render identifier in workspace state while polling and downloading the authorized private result."
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    effect: "Use the bearer-authenticated connection API to start provider OAuth and display only token-free connection metadata; browser storage never receives OAuth access/refresh tokens."
+    must_preserve: true
+error_paths:
+  - source_loc: "frontend/app/page.tsx"
+    trigger: "API authentication, upload, audio validation, analysis, or report generation fails."
+    outcome: "Render a visible safe error and return to the studio form without showing provider secrets or stack traces."
+    contract: "Visible frontend error state"
+    must_preserve: true
+  - source_loc: "frontend/app/page.tsx"
+    trigger: "Promotional consent, render creation/status polling, or private MP4 download fails."
+    outcome: "Show a visible safe video-render error; do not expose stack traces or offer a download before successful completion."
+    contract: "Visible frontend error state"
+    must_preserve: true
+concurrency:
+  model: async
+  tx_boundary:
+    source_loc: "frontend/lib/api.ts"
+    scope: "Browser requests do not own database transactions; API handlers and the job worker persist state."
+    isolation: "N/A"
+    must_preserve: true

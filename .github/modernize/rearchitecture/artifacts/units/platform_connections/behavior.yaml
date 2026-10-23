@@ -1,0 +1,43 @@
+unit: platform_connections
+branches:
+  - source_loc: "backend/routers/connections.py:176"
+    condition: "The authenticated owner starts a provider connection."
+    behavior: "Require active workspace-level platform_account_connection consent and configured provider credentials plus a valid Fernet key; persist only a SHA-256 state hash with a ten-minute expiry and return the provider authorization URL."
+    must_preserve: true
+  - source_loc: "backend/routers/connections.py:206"
+    condition: "A provider redirects to the OAuth callback."
+    behavior: "Consume a matching unexpired state exactly once, recheck owner consent, exchange the authorization code server-side, resolve read-only account identity, and persist encrypted tokens and granted scopes."
+    must_preserve: true
+  - source_loc: "backend/routers/connections.py:162"
+    condition: "The authenticated owner lists connected providers."
+    behavior: "Return only configured/connected/expired status, account identity, actual scopes, and expiry; never return access or refresh token material."
+    must_preserve: true
+  - source_loc: "backend/routers/connections.py:240"
+    condition: "The authenticated owner removes a provider connection."
+    behavior: "Clear locally stored encrypted credentials and account details; provider-side authorization may remain until revoked in the provider's security settings."
+    must_preserve: true
+side_effects:
+  - source_loc: "backend/routers/connections.py:98"
+    effect: "Atomically mark an OAuth state consumed before handling denial, code exchange, or persistence."
+    must_preserve: true
+  - source_loc: "backend/routers/connections.py:127"
+    effect: "Persist Fernet-encrypted access and refresh tokens with owner/provider identity, granted scopes, and token expiry."
+    must_preserve: true
+error_paths:
+  - source_loc: "backend/routers/connections.py:180"
+    trigger: "Workspace account-connection consent, provider credentials, callback configuration, or a valid encryption key is missing."
+    outcome: "Reject the start request with a safe consent or configuration error; do not create a provider authorization URL."
+    contract: "CONSENT_REQUIRED, OAUTH_PROVIDER_NOT_CONFIGURED, TOKEN_ENCRYPTION_NOT_CONFIGURED, or TOKEN_ENCRYPTION_KEY_INVALID"
+    must_preserve: true
+  - source_loc: "backend/routers/connections.py:207"
+    trigger: "State is missing, expired, mismatched, replayed, or the provider denies/fails authorization."
+    outcome: "Redirect to the configured frontend with a fixed safe failure reason; never echo provider secrets, code, or raw error text."
+    contract: "One-time OAuth callback redirect"
+    must_preserve: true
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "backend/routers/connections.py:98"
+    scope: "Consume OAuth state with a conditional database update; persist a successful connection in a separate transaction after provider verification and a final consent recheck."
+    isolation: "Database default"
+    must_preserve: true

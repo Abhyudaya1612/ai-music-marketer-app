@@ -1,0 +1,569 @@
+{
+  "electronic": {
+    "visualizer_type": "spectrum",
+    "colors": ["#00FF00", "#00FFFF", "#FF00FF"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#000000"
+  },
+  "hip-hop": {
+    "visualizer_type": "waveform",
+    "colors": ["#FFD700", "#FF6347", "#000000"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 42,
+    "background_color": "#1a1a1a"
+  },
+  "rock": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF0000", "#FFFFFF", "#000000"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d0d"
+  },
+  "pop": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF1493", "#00BFFF", "#FFD700"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#1a1a2e"
+  },
+  "jazz": {
+    "visualizer_type": "spectrum",
+    "colors": ["#8B4513", "#DAA520", "#FFFFFF"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 32,
+    "background_color": "#1a1a1a"
+  },
+  "classical": {
+    "visualizer_type": "waveform",
+    "colors": ["#FFD700", "#FFFFFF", "#000000"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 30,
+    "background_color": "#0a0a0a"
+  },
+  "folk": {
+    "visualizer_type": "waveform",
+    "colors": ["#8B7355", "#D2B48C", "#90EE90"],
+    "tempo_sync": false,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Verdana",
+    "lyrics_font_size": 34,
+    "background_color": "#0d1b0d"
+  },
+  "reggae": {
+    "visualizer_type": "waveform",
+    "colors": ["#228B22", "#FFD700", "#FF0000"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0a00"
+  },
+  "country": {
+    "visualizer_type": "waveform",
+    "colors": ["#8B4513", "#D2691E", "#FFD700"],
+    "tempo_sync": false,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Verdana",
+    "lyrics_font_size": 36,
+    "background_color": "#1a1410"
+  },
+  "r&b": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF00FF", "#00FFFF", "#FFD700"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0d1a"
+  },
+  "metal": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF0000", "#FFFFFF", "#000000"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 44,
+    "background_color": "#000000"
+  },
+  "indie": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF6B9D", "#C44569", "#A8E6CF"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#0d0d0d"
+  },
+  "ambient": {
+    "visualizer_type": "waveform",
+    "colors": ["#4169E1", "#87CEEB", "#B0E0E6"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 28,
+    "background_color": "#000020"
+  },
+  "lo-fi": {
+    "visualizer_type": "waveform",
+    "colors": ["#CD853F", "#DEB887", "#F5DEB3"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 32,
+    "background_color": "#1a1410"
+  },
+  "trap": {
+    "visualizer_type": "spectrum",
+    "colors": ["#00FF00", "#FFFF00", "#FF0000"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0a0a0a"
+  },
+  "dubstep": {
+    "visualizer_type": "spectrum",
+    "colors": ["#00FFFF", "#FF00FF", "#FFFF00"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#000010"
+  },
+  "house": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF00FF", "#00FF00", "#00FFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#0d0d1a"
+  },
+  "techno": {
+    "visualizer_type": "spectrum",
+    "colors": ["#00FFFF", "#FFFFFF", "#000000"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 34,
+    "background_color": "#0a0a0a"
+  },
+  "trance": {
+    "visualizer_type": "spectrum",
+    "colors": ["#00FF7F", "#32CD32", "#00BFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#000010"
+  },
+  "drum&bass": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF4500", "#FFD700", "#00FF00"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d0d"
+  },
+  "soul": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF69B4", "#FFB6C1", "#FFC0CB"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 36,
+    "background_color": "#0d0d0d"
+  },
+  "blues": {
+    "visualizer_type": "waveform",
+    "colors": ["#00008B", "#4169E1", "#87CEEB"],
+    "tempo_sync": false,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 34,
+    "background_color": "#0a0a0d"
+  },
+  "gospel": {
+    "visualizer_type": "waveform",
+    "colors": ["#FFD700", "#FFFFFF", "#FF6347"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0a00"
+  },
+  "punk": {
+    "visualizer_type": "spectrum",
+    "colors": ["#00FF00", "#FF00FF", "#000000"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 42,
+    "background_color": "#000000"
+  },
+  "alternative": {
+    "visualizer_type": "waveform",
+    "colors": ["#9932CC", "#FF1493", "#00FF00"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d1a"
+  },
+  "experimental": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FFD700", "#FF00FF", "#00FFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "flowing",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 32,
+    "background_color": "#0a0a0a"
+  },
+  "orchestral": {
+    "visualizer_type": "waveform",
+    "colors": ["#FFD700", "#FFFFFF", "#000000"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 28,
+    "background_color": "#0d0d0d"
+  },
+  "opera": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF1493", "#FFD700", "#000000"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 32,
+    "background_color": "#0a0000"
+  },
+  "acoustic": {
+    "visualizer_type": "waveform",
+    "colors": ["#8B4513", "#D2B48C", "#FFFFFF"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Verdana",
+    "lyrics_font_size": 34,
+    "background_color": "#0d0d0d"
+  },
+  "singer-songwriter": {
+    "visualizer_type": "waveform",
+    "colors": ["#FFB6C1", "#FFC0CB", "#FFFFFF"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 36,
+    "background_color": "#0d0d0d"
+  },
+  "britpop": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF0000", "#FFFFFF", "#0000FF"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d0d"
+  },
+  "grunge": {
+    "visualizer_type": "spectrum",
+    "colors": ["#A9A9A9", "#696969", "#000000"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0a0a0a"
+  },
+  "k-pop": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF1493", "#00FF7F", "#FFD700"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0d1a"
+  },
+  "j-pop": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF69B4", "#00BFFF", "#FFD700"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d1a"
+  },
+  "anime": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF1493", "#FFD700", "#00FFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0a0a1a"
+  },
+  "video-game": {
+    "visualizer_type": "spectrum",
+    "colors": ["#00FF00", "#FF00FF", "#FFFF00"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#000000"
+  },
+  "cinematic": {
+    "visualizer_type": "waveform",
+    "colors": ["#FFD700", "#FFFFFF", "#000000"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 32,
+    "background_color": "#000000"
+  },
+  "trailer": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF0000", "#FFFFFF", "#000000"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 44,
+    "background_color": "#000000"
+  },
+  "afrobeat": {
+    "visualizer_type": "waveform",
+    "colors": ["#228B22", "#FFD700", "#FF6347"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0a00"
+  },
+  "latin": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF6347", "#FFD700", "#FFFFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0a00"
+  },
+  "reggaeton": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF00FF", "#FFFF00", "#00FF00"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0d0d"
+  },
+  "funk": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF00FF", "#00FF00", "#FFD700"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d0d"
+  },
+  "disco": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF00FF", "#00FFFF", "#FFD700"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0d0d"
+  },
+  "synthwave": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF006E", "#8338EC", "#FFBE0B"],
+    "tempo_sync": true,
+    "lyrics_position": "bottom",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#0a0a1a"
+  },
+  "darkwave": {
+    "visualizer_type": "waveform",
+    "colors": ["#800080", "#4B0082", "#FFFFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#0a0a0a"
+  },
+  "industrial": {
+    "visualizer_type": "spectrum",
+    "colors": ["#808080", "#000000", "#FFFFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d0d"
+  },
+  "post-punk": {
+    "visualizer_type": "waveform",
+    "colors": ["#000000", "#FFFFFF", "#FF0000"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0a0a0a"
+  },
+  "emo": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF1493", "#000000", "#FFFFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0d0d"
+  },
+  "bossa-nova": {
+    "visualizer_type": "waveform",
+    "colors": ["#8B4513", "#D2B48C", "#90EE90"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 32,
+    "background_color": "#0d0a00"
+  },
+  "samba": {
+    "visualizer_type": "spectrum",
+    "colors": ["#228B22", "#FFD700", "#FF6347"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0d0a00"
+  },
+  "salsa": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF6347", "#FFD700", "#FFFFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 40,
+    "background_color": "#0a0000"
+  },
+  "merengue": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF00FF", "#00FFFF", "#FFD700"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0d0d"
+  },
+  "cumbia": {
+    "visualizer_type": "waveform",
+    "colors": ["#228B22", "#FFD700", "#FF6347"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 38,
+    "background_color": "#0d0a00"
+  },
+  "tango": {
+    "visualizer_type": "waveform",
+    "colors": ["#000000", "#FF0000", "#FFFFFF"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 34,
+    "background_color": "#0a0000"
+  },
+  "flamenco": {
+    "visualizer_type": "waveform",
+    "colors": ["#FF0000", "#FFD700", "#000000"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 36,
+    "background_color": "#0a0000"
+  },
+  "balkan": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF0000", "#FFFFFF", "#0000FF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#0d0d0d"
+  },
+  "klezmer": {
+    "visualizer_type": "waveform",
+    "colors": ["#0000FF", "#FFFFFF", "#FFD700"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 32,
+    "background_color": "#0a000d"
+  },
+  "celtic": {
+    "visualizer_type": "waveform",
+    "colors": ["#228B22", "#FFD700", "#FFFFFF"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 32,
+    "background_color": "#0d0a00"
+  },
+  "world": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FFD700", "#FF6347", "#00FFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 36,
+    "background_color": "#0d0d0d"
+  },
+  "ambient-electronica": {
+    "visualizer_type": "waveform",
+    "colors": ["#4169E1", "#87CEEB", "#00FF00"],
+    "tempo_sync": false,
+    "lyrics_position": "top",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 28,
+    "background_color": "#000010"
+  },
+  "chillwave": {
+    "visualizer_type": "waveform",
+    "colors": ["#87CEEB", "#B0E0E6", "#FFB6C1"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Georgia",
+    "lyrics_font_size": 32,
+    "background_color": "#0a0a1a"
+  },
+  "vaporwave": {
+    "visualizer_type": "spectrum",
+    "colors": ["#FF00FF", "#00FFFF", "#FFD700"],
+    "tempo_sync": false,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 32,
+    "background_color": "#1a0a0d"
+  },
+  "trip-hop": {
+    "visualizer_type": "waveform",
+    "colors": ["#800080", "#FFD700", "#FFFFFF"],
+    "tempo_sync": true,
+    "lyrics_position": "center",
+    "lyrics_font_family": "Arial",
+    "lyrics_font_size": 34,
+    "background_color": "#0a0a0a"
+  }
+}

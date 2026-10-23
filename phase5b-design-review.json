@@ -1,0 +1,187 @@
+{
+  "review_status": "CHANGES_REQUESTED",
+  "review_date": "2025-01-17",
+  "document_reviewed": "PHASE_5B_REQUIREMENTS.md",
+  "summary": "The Phase 5b design articulates strong requirements for genre-based themed lyric videos with always-visible lyrics. However, there are critical gaps in FFmpeg filter feasibility, ambiguous implementation details for complex visualizers, unspecified performance constraints for 50+ visualizers, and missing input validation rules. The current architecture (lyric_video_generator.py) supports only two basic visualizers and requires significant extension.",
+  "findings": [
+    {
+      "id": 1,
+      "severity": "HIGH",
+      "category": "Feasibility Gap",
+      "title": "FFmpeg Filter Complexity Unverified for 13+ Visualizer Types",
+      "description": "The design specifies 13 visualizer types but provides FFmpeg filter chains only for two basic cases (showwaves, showspectrum). Complex visualizers like 'Neon Particles' (floating/orbiting points with trails), 'Beat-Sync Geometric', and 'Chromatic Aberration' lack defined filter implementations. These are non-trivial to construct with FFmpeg alone and may require:\n- Multiple layers (overlay, format conversions, color processing)\n- External assets (particle definitions, gradient files)\n- Real-time synthesis (generating particle positions frame-by-frame)\n- Post-processing steps (color shift, distortion)\n\nThe design does not specify whether these will be pure FFmpeg filter chains or require external tools/preprocessing.",
+      "location": "Section 3: Visualizer Types (Genre-Specific)",
+      "impact": "Implementation will likely discover that several visualizer types are infeasible with pure FFmpeg filters, requiring redesign or descoping.",
+      "concrete_fix": "For each of the 13 visualizer types, provide either:\n(a) A complete FFmpeg filter chain (with source generation if needed), OR\n(b) A statement that the visualizer requires pre-rendered assets or external processing, OR\n(c) A fallback to a simpler FFmpeg-native alternative.\n\nExample structure:\n```json\n{\n  \"neon_particles\": {\n    \"description\": \"Floating/orbiting points with trails\",\n    \"implementation\": \"pure_ffmpeg\",\n    \"filter_chain\": \"[0:a]showwaves=s=1280x720:mode=... [vis];[vis]format=... [out]\",\n    \"notes\": \"Uses showwaves with trail effect parameters\"\n  },\n  \"beat_sync_geometric\": {\n    \"implementation\": \"requires_preprocessing\",\n    \"description\": \"Rectangles/circles responding to beat/kick\",\n    \"preprocessing\": \"Extract BPM and beat positions from audio\",\n    \"filter_chain\": \"[beat_data]drawbox=...\",\n    \"notes\": \"Beat detection must run before FFmpeg\"\n  }\n}\n```"
+    },
+    {
+      "id": 2,
+      "severity": "HIGH",
+      "category": "Unverified Assumption",
+      "title": "BPM Extraction Method Undefined",
+      "description": "Section 6 states 'Extract BPM from audio using FFprobe or Librosa' but:\n- FFprobe does not extract BPM; it returns basic format metadata (sample rate, bitrate, codec) only.\n- Librosa is not currently in the project dependencies (checked backend/config.py and project files).\n- No fallback strategy defined if BPM extraction fails or returns unreliable values.\n- No tolerance defined for BPM accuracy (is ±2 BPM acceptable for animation sync?).",
+      "location": "Section 6: Animation Speeds and Tempo-Sync",
+      "impact": "Implementation will fail or use incorrect BPM values for tempo-synced genres, breaking animation synchronization.",
+      "concrete_fix": "Choose one approach and specify it:\n\n**Option A: Use Librosa (recommended)**\n- Add `librosa` to backend dependencies\n- Define fallback: 'If Librosa fails or BPM confidence < 0.8, use default speed'\n- Document: 'Extracted BPM is used directly; no rounding or normalization applied'\n\n**Option B: Use external tool (e.g., aubio)**\n- Document the tool name and installation method\n- Specify error handling if tool unavailable\n\n**Option C: Disable tempo-sync**\n- Mark tempo-synced genres as static-speed instead\n- Update Section 6 to remove tempo-sync requirement\n\nExample (Option A):\n```python\ndef extract_bpm(audio_path: str) -> float:\n    \"\"\"Extract BPM using librosa. Returns None if detection fails.\"\"\"\n    try:\n        y, sr = librosa.load(audio_path)\n        onset_env = librosa.onset.onset_strength(y=y, sr=sr)\n        bpm = librosa.feature.tempo(onset_env=onset_env, sr=sr)[0]\n        if 60 <= bpm <= 200:  # Sanity check\n            return bpm\n    except Exception as e:\n        logger.warning(f\"BPM extraction failed: {e}\")\n    return None  # Caller uses default speed\n```"
+    },
+    {
+      "id": 3,
+      "severity": "HIGH",
+      "category": "Missing Implementation Details",
+      "title": "Lyric Positioning Logic Underspecified",
+      "description": "Section 4 specifies genre-based positioning rules (center, bottom, top, flowing, karaoke) but does not define:\n- How 'flowing/animated path' is computed or rendered (which FFmpeg filters enable this?).\n- Whether position changes frame-to-frame or is static per subtitle block.\n- How 'offset left/right' (for folk/indie) is quantified (pixel offset? percentage of frame width?).\n- Karaoke-style highlighting rules: 'current word/line highlighted distinctly' — how does FFmpeg differentiate current vs. non-current text in ASS format?\n- Handling of multi-line lyrics: if positioning is 'top-left', does each line stack, or does text wrap?\n- Overflow handling: what happens if lyric text exceeds frame width at chosen font size?",
+      "location": "Section 4: Lyric Positioning and Styling per Genre",
+      "impact": "Implementation will make ad-hoc choices, leading to inconsistent text rendering and poor UX for some genres.",
+      "concrete_fix": "Extend the genre theme JSON schema to include:\n\n```json\n{\n  \"folk\": {\n    \"text_positioning\": \"left_offset\",\n    \"text_x_offset_pixels\": 30,\n    \"text_y_position\": \"center\",\n    \"multi_line_handling\": \"stack_top_aligned\",\n    \"karaoke_enabled\": false,\n    \"text_wrap_behavior\": \"clip_or_shrink\"\n  },\n  \"pop\": {\n    \"text_positioning\": \"center\",\n    \"text_x_offset_pixels\": 0,\n    \"text_y_position\": \"center\",\n    \"multi_line_handling\": \"center_aligned\",\n    \"karaoke_enabled\": true,\n    \"text_wrap_behavior\": \"wrap_to_width\"\n  }\n}\n```\n\nDocument ASS implementation details in a separate spec for karaoke highlighting (e.g., using \\k tags in ASS for word-level synchronization)."
+    },
+    {
+      "id": 4,
+      "severity": "HIGH",
+      "category": "Ambiguity",
+      "title": "Contrast and Readability Rules Ambiguous",
+      "description": "Section 2 states 'Text color contrasts with background visualizer (typically white, light colors, or genre-specific accent color)' and 'Text strokes/shadows for readability over varying background intensity' but:\n- No contrast ratio defined (WCAG AA requires 4.5:1 for normal text; is this enforced?).\n- No algorithm specified for choosing between white/light/accent color based on visualizer background.\n- Text stroke/shadow parameters (width, color, blur) undefined — should these be genre-specific or fixed?\n- No validation rule defined to ensure readability before rendering.\n- What happens if a genre's accent color is too dark for readability over its visualizer's primary color?",
+      "location": "Section 2: Always-Visible Lyrics, Section 7: Typography Details",
+      "impact": "Rendered videos may have unreadable text in some genre/visualizer combinations, violating accessibility requirements.",
+      "concrete_fix": "Add a validation function and update schema:\n\n```python\ndef validate_text_contrast(accent_color: str, visualizer_primary: str) -> bool:\n    \"\"\"Return True if contrast ratio >= 4.5:1 (WCAG AA).\"\"\"\n    # Compute luminance using relative luminance formula\n    luminance_text = compute_luminance(accent_color)\n    luminance_bg = compute_luminance(visualizer_primary)\n    contrast = (max(luminance_text, luminance_bg) + 0.05) / (min(luminance_text, luminance_bg) + 0.05)\n    return contrast >= 4.5\n```\n\nUpdate genre theme schema:\n\n```json\n{\n  \"electronic\": {\n    \"accent_color\": \"#00FFFF\",\n    \"text_stroke_width\": 2,\n    \"text_stroke_color\": \"#000000\",\n    \"_contrast_ratio\": 7.2\n  }\n}\n```\n\nAdd schema validation: reject any genre with contrast_ratio < 4.5, or auto-adjust stroke color if primary/accent conflict detected."
+    },
+    {
+      "id": 5,
+      "severity": "MEDIUM",
+      "category": "Unverified Assumption",
+      "title": "System Font Availability Assumption Risky",
+      "description": "Assumption #3 states 'Standard fonts (Arial, Georgia, Courier) available on render server (Windows, Linux, macOS)'. However:\n- The project is deployed on AWS Lambda for backend processing (based on serverless patterns in codebase).\n- AWS Lambda environments typically have minimal font support; many standard fonts are missing.\n- No fallback font strategy defined if a genre's font_family is unavailable.\n- Fonts like 'Comic Sans MS', 'Impact' (Section 7) are not guaranteed on all systems.",
+      "location": "Assumptions #3, Section 7: Typography Details",
+      "impact": "Video rendering will fail or fall back to system default (usually Liberation Sans or Courier), breaking genre-specific typography intent.",
+      "concrete_fix": "Choose one approach:\n\n**Option A: Restrict to Web-Safe Fonts**\nUpdate Section 7 to only allow: Arial, Helvetica, Georgia, Courier New, Verdana, Times New Roman, Trebuchet MS.\nRemove Comic Sans MS, Impact, and handwriting-style fonts.\n\n**Option B: Embed Fonts**\nDocument which fonts will be downloaded at render time (e.g., from Google Fonts API).\nExample:\n```json\n{\n  \"folk\": {\n    \"font_family\": \"Indie Flower\",\n    \"font_url\": \"https://fonts.googleapis.com/css2?family=Indie+Flower\",\n    \"fallback_font\": \"Arial\"\n  }\n}\n```\n\n**Option C: Add Font Validation**\n```python\ndef validate_font_available(font_name: str) -> bool:\n    \"\"\"Check if font is available on render system.\"\"\"\n    available = subprocess.run(\n        [\"fc-list\", \":\", \"family\"], capture_output=True, text=True\n    ).stdout\n    return font_name in available\n```\nRun validation before rendering; fail fast with clear error if font missing."
+    },
+    {
+      "id": 6,
+      "severity": "MEDIUM",
+      "category": "Missing Details",
+      "title": "Genre Dataset Schema Incompletely Specified",
+      "description": "Acceptance Criterion 1 requires each genre to include 12 fields, but the design provides only a basic 5-field example (Acceptance Criteria #1). Missing from example:\n- font_family, font_size, font_weight, text_positioning, text_stroke_width, text_stroke_color\n- tempo_sync (boolean)\n- What additional fields might be needed (e.g., particle density, animation speed multiplier)?\n- Is the schema versioned? What happens when adding a new visualizer type that needs new fields?",
+      "location": "Acceptance Criterion 1, Section 5: Color Palettes",
+      "impact": "No shared understanding of the complete JSON structure; implementation may use inconsistent field names or add ad-hoc fields.",
+      "concrete_fix": "Provide a complete example genre entry:\n\n```json\n{\n  \"hip-hop\": {\n    \"visualizer_type\": \"beat_sync_geometric\",\n    \"primary_color\": \"#FFD700\",\n    \"secondary_color\": \"#000000\",\n    \"accent_color\": \"#FFFFFF\",\n    \"background_color\": \"#1a1a1a\",\n    \"font_family\": \"Arial\",\n    \"font_size\": 48,\n    \"font_weight\": \"bold\",\n    \"text_positioning\": \"center\",\n    \"text_stroke_width\": 2,\n    \"text_stroke_color\": \"#000000\",\n    \"tempo_sync\": true,\n    \"animation_speed_default\": 1.0,\n    \"particle_density\": 50,\n    \"beat_response_intensity\": 0.8\n  }\n}\n```\n\nAlso provide a JSON Schema (JSONSchema format) for validation:\n```json\n{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"additionalProperties\": {\n    \"type\": \"object\",\n    \"required\": [\"visualizer_type\", \"primary_color\", \"accent_color\", ...],\n    \"properties\": { ... }\n  }\n}\n```"
+    },
+    {
+      "id": 7,
+      "severity": "MEDIUM",
+      "category": "Performance Gap",
+      "title": "Performance Constraints for 50+ Visualizers Not Analyzed",
+      "description": "Requirement states '50+ music genres' and Non-Functional Requirement specifies 'render completes within 120 seconds for typical 3-5 minute tracks'. However:\n- No analysis of FFmpeg rendering time per visualizer type (some filters are computationally expensive; spectrum analysis is 2-3x slower than waveform).\n- No specification of hardware assumptions (CPU cores, RAM, GPU availability on AWS Lambda).\n- AWS Lambda has strict timeout (900 seconds max) and memory constraints (up to 10 GB); does 120 seconds leave room for BPM extraction, ASS file generation, video encoding, and S3 upload?\n- No caching strategy if same genre/audio combination is rendered multiple times.\n- Section 6 mentions 'Tempo-synced genres' require BPM extraction, which adds latency (Librosa can take 10-30 seconds for a 3-minute track).",
+      "location": "Non-Functional Requirements: Performance, Section 6: Animation Speeds",
+      "impact": "Rendering may routinely exceed 120-second SLA or hit Lambda timeout, causing degraded user experience.",
+      "concrete_fix": "Document performance profile:\n\n```json\n{\n  \"performance_targets\": {\n    \"max_render_time_seconds\": 120,\n    \"target_track_duration_minutes\": \"3-5\",\n    \"include_overhead\": \"BPM extraction, ASS creation, encode, cleanup\",\n    \"environment\": \"AWS Lambda 2048 MB, 2 vCPU equivalent\"\n  },\n  \"visualizer_timings\": {\n    \"showwaves\": \"15-20 seconds\",\n    \"showspectrum\": \"30-40 seconds\",\n    \"beat_sync_geometric\": \"40-50 seconds (includes BPM extraction)\",\n    \"neon_particles\": \"25-35 seconds (TBD)\"\n  },\n  \"optimizations\": [\n    \"Cache rendered visualizers per genre (reuse across tracks)\",\n    \"Run BPM extraction in parallel if feasible\",\n    \"Use libx264 preset 'ultrafast' instead of 'fast' for rendering\"\n  ]\n}\n```\n\nAdd acceptance criterion: 'Measured end-to-end render time for 3 genres is <= 120 seconds; document actual timings in test results.'"
+    },
+    {
+      "id": 8,
+      "severity": "MEDIUM",
+      "category": "Input Validation Missing",
+      "title": "No Input Validation Rules Specified for Genre Parameter",
+      "description": "The design adds a `genre` parameter to `render_lyric_video()` but does not specify:\n- What happens if genre is provided but not in genre_themes.json? (Error? Fallback to default?)\n- Should genre be case-insensitive (\"Hip-Hop\" vs. \"hip-hop\")?\n- Are user-provided genres validated, or only API-provided genres?\n- What if genre_themes.json is missing or malformed at render time?\n- Max string length for genre name (prevent injection/DoS)?",
+      "location": "Acceptance Criterion 2, Section 1: Functional Requirements",
+      "impact": "Rendering may fail unexpectedly or fall back silently, making errors hard to diagnose.",
+      "concrete_fix": "Update `render_lyric_video()` signature and documentation:\n\n```python\ndef render_lyric_video(\n    input_audio_path: str,\n    lyrics_text: str | None,\n    lyrics_format: str = \"srt\",\n    output_path: str | None = None,\n    mode: str = \"waveform\",\n    genre: str | None = None,  # NEW PARAMETER\n) -> dict:\n    \"\"\"\n    Render a lyric video with optional genre-based theme.\n    \n    Args:\n        genre: Genre name (case-insensitive, must exist in genre_themes.json).\n               If None, defaults to 'waveform' mode.\n               If provided but not found, raises LyricVideoError(\"GENRE_NOT_FOUND\").\n    \n    Raises:\n        LyricVideoError(\"GENRE_NOT_FOUND\"): Genre not in dataset.\n        LyricVideoError(\"GENRE_THEMES_MISSING\"): genre_themes.json unavailable.\n    \"\"\"\n    # Validation\n    if genre is not None:\n        if len(genre) > 100:\n            raise LyricVideoError(\"GENRE_NAME_TOO_LONG\")\n        genre = genre.lower().strip()\n        if genre not in load_genre_themes():\n            raise LyricVideoError(\"GENRE_NOT_FOUND\")\n```\n\nAdd to backend config:\n```python\ngenre_themes_path: str = \"backend/data/genre_themes.json\"\n```"
+    },
+    {
+      "id": 9,
+      "severity": "MEDIUM",
+      "category": "Missing Error Handling",
+      "title": "Error Handling for Incompatible Visualizer+Audio Combinations Unspecified",
+      "description": "Some FFmpeg filters may produce errors or visual artifacts with certain audio characteristics:\n- A silent or very quiet audio file fed to showspectrum may render blank/black.\n- Beat-sync visualizers require BPM extraction; if audio is ambiguous (e.g., beatless ambient) BPM detection may fail or return nonsensical values.\n- Some visualizer types may require minimum/maximum audio duration (e.g., < 30 seconds may not render effectively).\n\nNo error handling strategy defined for these edge cases.",
+      "location": "Section 3: Visualizer Types, Section 6: Animation Speeds",
+      "impact": "Edge case audio may render with poor visual quality or errors, without clear feedback to user.",
+      "concrete_fix": "Add pre-render validation:\n\n```python\ndef validate_audio_for_genre(audio_path: str, genre: str) -> list[str]:\n    \"\"\"Return list of warnings/errors if audio incompatible with genre.\"\"\"\n    issues = []\n    \n    # Check audio duration\n    duration = get_audio_duration(audio_path)\n    if duration < 10:\n        issues.append(f\"Audio too short ({duration}s); visualizer quality may be poor.\")\n    \n    # Check RMS energy (detect silent audio)\n    rms = compute_rms(audio_path)\n    if rms < 0.01:  # Very quiet\n        issues.append(\"Audio is very quiet; visualization may be faint.\")\n    \n    # Check BPM for tempo-sync genres\n    genre_data = load_genre_themes()[genre]\n    if genre_data.get(\"tempo_sync\", False):\n        bpm = extract_bpm(audio_path)\n        if bpm is None:\n            issues.append(\"BPM extraction failed; using default speed.\")\n        elif bpm < 60 or bpm > 200:\n            issues.append(f\"BPM {bpm} outside typical range; beat sync may be inaccurate.\")\n    \n    return issues\n```\n\nCall before rendering; log warnings but don't fail (render anyway with caution flag)."
+    },
+    {
+      "id": 10,
+      "severity": "MEDIUM",
+      "category": "Ambiguity",
+      "title": "Scope of 'Always-Visible Lyrics' Unclear for Long Tracks",
+      "description": "Requirement #2 states 'Lyrics text appears throughout entire video duration, never hidden or faded away', but:\n- If a track is 5 minutes and lyrics have only 10 subtitle blocks (2-30 seconds of coverage), what displays during the remaining ~4.5 minutes of silence?\n- Does 'always-visible' mean the last lyric line stays on screen indefinitely, or does the frame go blank between lyric blocks?\n- Section 2 specifies positioning per genre but doesn't clarify what to display when no current lyric is active.",
+      "location": "Section 2: Always-Visible Lyrics",
+      "impact": "Implementation will make inconsistent choices; some videos may have blank screens, others may repeat lyrics.",
+      "concrete_fix": "Clarify in design:\n\n**Option A: Hold Last Lyric**\n'When no lyric block is active, the most recent lyric remains visible in the same position. If no lyric has appeared yet (start of track), display placeholder text (e.g., artist name, song title, or blank).'\n\n**Option B: Continuous Lyric Stream**\n'Require input lyrics to cover 100% of track duration. If gaps exist, fill with blank lines or instrumental markers (e.g., \"[Instrumental]\").'\n\n**Option C: Fade Out**\n(Contradicts 'never hidden'; not recommended)\n\nChoose and document as part of acceptance criterion: 'Full track with gaps renders correctly with [Option A/B behavior].'"
+    },
+    {
+      "id": 11,
+      "severity": "NIT",
+      "category": "Missing Detail",
+      "title": "Karaoke-Style Highlighting Implementation Path Undefined",
+      "description": "Section 2 mentions 'Karaoke-style highlight optional for all (current word/line highlighted distinctly)' and Acceptance Criterion 5 lists 'Karaoke-style highlighting (if enabled) correctly highlights current word/line'. However:\n- Implementation path is not clear: FFmpeg's ASS format supports \\k tags for word-level timing, but current ASS builder (backend/services/lyric_video_generator.py:build_ass_subtitles) does not generate per-word timings.\n- Design does not specify input format: does karaoke require word-level timings in input SRT/LRC, or should they be generated from line-level timings?\n- Styling not defined: what color/effect distinguishes 'current word' vs. 'future words'?",
+      "location": "Section 2: Always-Visible Lyrics, Acceptance Criterion 5",
+      "impact": "Karaoke feature may be incomplete or inconsistently implemented across genres.",
+      "concrete_fix": "Add subsection to design:\n\n**Karaoke Highlighting (Optional Feature)**\n- Input format: Extended LRC format with word-level timings (LRC 2.0) or special SRT encoding.\n- Styling: Configure per genre in theme JSON:\n```json\n{\n  \"karaoke_config\": {\n    \"enabled\": false,\n    \"current_word_color\": \"#FF0000\",\n    \"future_words_color\": \"#CCCCCC\",\n    \"past_words_color\": \"#666666\",\n    \"animation\": \"none\" // or \"highlight\" for color fade-in\n  }\n}\n```\n- Implementation: Process input to extract word-level timings if karaoke_enabled; pass to ASS builder with \\k tags.\n- Acceptance criterion: 'Karaoke mode (if enabled) highlights current word in real time; tested with extended LRC input.'"
+    },
+    {
+      "id": 12,
+      "severity": "NIT",
+      "category": "Out of Scope Clarity",
+      "title": "Automatic Genre Detection Mentioned in User Request but Out of Scope",
+      "description": "Original user request (#11) mentions 'when the video is generated the lyrics should be shown', implying a complete workflow. Out of Scope section excludes 'Automatic genre detection from audio' but design assumes genre is 'provided by user or extracted from metadata'. Current codebase (job_runner.py:_lyric_video_render_job) does not extract genre; it currently passes genre=None.\n\nNo clear handoff specified: who/what is responsible for providing the genre to render_lyric_video()?",
+      "location": "Out of Scope section, Assumptions #1",
+      "impact": "Feature is incomplete until genre is sourced; unclear integration point.",
+      "concrete_fix": "Clarify integration:\n\n**In Assumptions section, update #1:**\n'Genre metadata is provided by:\n- User input via API parameter (recommended)\n- Extracted from audio file metadata tags (ID3, Vorbis comments) if available\n- If both unavailable, render defaults to 'waveform' mode (no genre theme).\n\nGenre extraction and validation is out of scope for this phase; implementation must source genre from existing infrastructure (e.g., user form, database metadata).'  \n\n**In API documentation:**\n```\nPOST /api/v1/video/{render_id}/generate-lyric-video\nBody: { \"genre\": \"hip-hop\" }\n```\n\nExample in endpoint (backend/routers/v1.py:generate_lyric_video):\n```python\nresult = render_lyric_video(\n    input_audio_path=original_path(asset.storage_key),\n    lyrics_text=render.lyrics_text,  # Load from DB\n    genre=render.genre,  # Load from DB or user input\n)\n```"
+    }
+  ],
+  "verified_assumptions": [
+    {
+      "assumption": "FFmpeg/FFprobe installed",
+      "status": "VERIFIED",
+      "evidence": "Current codebase (backend/services/lyric_video_generator.py, backend/config.py) already requires and uses FFmpeg/FFprobe. AWS Lambda Layer includes FFmpeg. No new external dependency.",
+      "note": "Existing infrastructure supports this requirement."
+    },
+    {
+      "assumption": "Lyric timing data accurate",
+      "status": "VERIFIED",
+      "evidence": "Backend already parses SRT/LRC (backend/services/lyric_video_generator.py:parse_srt, parse_lrc). Input validation is responsibility of caller, not this feature.",
+      "note": "No changes needed for this phase."
+    },
+    {
+      "assumption": "ASS subtitle format supported",
+      "status": "VERIFIED",
+      "evidence": "Current implementation (build_ass_subtitles) generates valid ASS format; FFmpeg filter 'subtitles=' accepts ASS files. Tested in test_lyric_video_generation.py.",
+      "note": "Foundation for genre-specific lyric positioning is sound."
+    }
+  ],
+  "unverified_wrong_assumptions": [
+    {
+      "assumption": "FFprobe can extract BPM",
+      "status": "WRONG",
+      "evidence": "FFprobe outputs format metadata only (sample rate, bitrate, codec, duration). BPM is not a format property; it requires audio analysis. Current code does not attempt BPM extraction.",
+      "correction": "BPM must be extracted via a third-party library (Librosa, aubio, etc.) or external tool, not FFprobe."
+    },
+    {
+      "assumption": "System fonts (Arial, Georgia, Courier) universally available",
+      "status": "UNVERIFIED / HIGH RISK",
+      "evidence": "Standard fonts are common on desktop systems but not guaranteed on AWS Lambda. Current code (lyric_video_generator.py) hardcodes 'Arial' in ASS; no font lookup or fallback.",
+      "recommendation": "Either (a) restrict fonts to web-safe list with fallbacks, or (b) embed fonts at render time. Testing required on Lambda to verify."
+    },
+    {
+      "assumption": "120-second render time achievable for 50+ visualizer types",
+      "status": "UNVERIFIED",
+      "evidence": "Current code renders only 2 visualizer types (showwaves, showspectrum); no performance data for complex types. Complex FFmpeg filter chains (especially spectrum-based) can exceed 30-50 seconds alone. BPM extraction adds 10-30 seconds.",
+      "recommendation": "Benchmark each visualizer type on target hardware (AWS Lambda 2048 MB). Current SLA may need revision."
+    }
+  ],
+  "scope_and_scale_assessment": {
+    "implementation_complexity": "HIGH",
+    "reasoning": "Requires: (1) Comprehensive genre dataset (50+ entries, 12+ fields each), (2) FFmpeg filter chain development for 13 visualizer types, (3) BPM extraction integration, (4) Enhanced ASS builder with positioning/styling logic, (5) Input validation and error handling, (6) Performance optimization.",
+    "estimated_effort_days": "15-20 (backend) + 5-10 (testing/validation)",
+    "critical_path": [
+      "Verify FFmpeg filter feasibility for all 13 visualizer types (3-5 days)",
+      "Implement BPM extraction and choose library (2-3 days)",
+      "Build genre dataset JSON (2-3 days)",
+      "Enhance render_lyric_video() and ASS builder (3-5 days)",
+      "Integration and E2E testing (5-7 days)"
+    ],
+    "descoping_candidates": [
+      "If FFmpeg filters infeasible: reduce to 5-7 core visualizers",
+      "If BPM extraction too slow: disable tempo-sync, use static speeds for all genres",
+      "If font embedding complex: restrict to web-safe fonts only",
+      "If karaoke implementation blocked: mark as future enhancement"
+    ]
+  },
+  "recommendation": "APPROVAL CONDITIONAL ON ADDRESSING HIGH-SEVERITY FINDINGS\n\nThe design is architecturally sound and aligned with user intent (genre-themed videos with always-visible lyrics). However, three critical gaps must be resolved before implementation:\n\n1. **FFmpeg Filter Feasibility (Finding #1)**: Document exact FFmpeg filter chains or acknowledge preprocessing requirements for all 13 visualizer types. Current design assumes pure FFmpeg can handle complex effects (particles, beat-sync) without specification.\n\n2. **BPM Extraction Method (Finding #2)**: Choose Librosa or alternative, add to dependencies, define error handling. FFprobe cannot extract BPM; design must be corrected.\n\n3. **Lyric Positioning Logic (Finding #3)**: Extend JSON schema and document how positioning is rendered in FFmpeg/ASS (especially 'flowing' paths and karaoke highlighting).\n\nOnce these are resolved and a revised design spec is circulated, implementation can proceed with confidence. Medium-severity findings (font handling, performance profiling, input validation) should be addressed during implementation with early testing and iteration."
+}

@@ -1,0 +1,7 @@
+unit: song_api
+commit: false
+candidate_splits:
+  - id: "backend/routers/songs.py:25-110"
+    drivers: [concern_split, execution_model_split]
+    rationale: "Catalog CRUD, campaign creation, deletion, and worker scheduling are combined in the same route module."
+    source_slice: {file: backend/routers/songs.py, lines: [25, 110]}

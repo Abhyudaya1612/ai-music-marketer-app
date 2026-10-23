@@ -1,0 +1,33 @@
+unit: campaign_api
+branches:
+  - source_loc: "backend/routers/campaigns.py:37"
+    condition: "Referenced song is missing or song_id is absent."
+    behavior: "Return 404 Song not found or 400 song_id is required."
+    must_preserve: true
+  - source_loc: "backend/routers/campaigns.py:78"
+    condition: "Campaign/task pair does not match."
+    behavior: "Return 404 Campaign task not found."
+    must_preserve: true
+side_effects:
+  - source_loc: "backend/routers/campaigns.py:73"
+    effect: "Persist campaign and its task rows."
+    must_preserve: true
+  - source_loc: "backend/routers/campaigns.py:95"
+    effect: "Persist updates to task status, priority, and owner when supplied."
+    must_preserve: true
+  - source_loc: "backend/routers/campaigns.py:106"
+    effect: "Delete campaign; task rows cascade."
+    must_preserve: true
+error_paths:
+  - source_loc: "backend/routers/campaigns.py:24"
+    trigger: "Campaign ID is unknown."
+    outcome: "HTTP 404 Campaign not found."
+    contract: "404"
+    must_preserve: true
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "backend/routers/campaigns.py:73"
+    scope: "Campaign and tasks are flushed/committed as one database operation."
+    isolation: "Database default"
+    must_preserve: true

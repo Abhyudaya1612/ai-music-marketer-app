@@ -1,0 +1,258 @@
+contracts:
+  - name: legacy-health
+    unit: web_entry
+    type: rest
+    stability: frozen
+    source_loc: "backend/main.py:41"
+    contract:
+      method: GET
+      path: /api/health
+      request: "No body"
+      response: "{status: ok, app: string, environment: string}"
+      error: "FastAPI default error behavior"
+      auth: "None in current implementation"
+    target_contract:
+      method: "GET /api/health -> same JSON response"
+      notes: "Preserve exact legacy route and response while adding /api/v1/health."
+    semantic_divergence: []
+  - name: legacy-song-create
+    unit: song_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/songs.py:25"
+    contract:
+      method: POST
+      path: /api/songs
+      request: "SongCreate {title, artist, genre?, lyrics?, bpm?, musical_key?, energy?, valence?}"
+      response: "SongOut; status 201; analysis scheduled in FastAPI BackgroundTasks"
+      error: "Pydantic validation and default FastAPI error responses"
+      auth: "None in current implementation"
+    target_contract:
+      method: "POST /api/songs -> same SongOut and 201"
+      notes: "Maintain old clients; new workflow is exposed separately under /api/v1."
+    semantic_divergence: []
+  - name: legacy-song-list
+    unit: song_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/songs.py:37"
+    contract:
+      method: GET
+      path: /api/songs
+      request: "No body"
+      response: "list[SongOut], ordered by created_at descending"
+      error: "FastAPI default errors"
+      auth: "None in current implementation"
+    target_contract:
+      method: "GET /api/songs -> same list[SongOut]"
+      notes: "Keep the legacy collection shape and ordering."
+    semantic_divergence: []
+  - name: legacy-song-detail
+    unit: song_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/songs.py:42"
+    contract:
+      method: GET
+      path: /api/songs/{song_id}
+      request: "Integer path ID"
+      response: "SongDetailOutWithCampaigns with related runs, agent output, campaigns, and calendar"
+      error: "404 Song not found"
+      auth: "None in current implementation"
+    target_contract:
+      method: "GET /api/songs/{song_id} -> same response model"
+      notes: "Preserve path, integer identifiers, nested response content, and 404."
+    semantic_divergence: []
+  - name: legacy-song-delete
+    unit: song_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/songs.py:88"
+    contract:
+      method: DELETE
+      path: /api/songs/{song_id}
+      request: "Integer path ID"
+      response: "204 No Content; SQLAlchemy cascade deletes dependent rows"
+      error: "404 Song not found"
+      auth: "None in current implementation"
+    target_contract:
+      method: "DELETE /api/songs/{song_id} -> same 204/404 behavior"
+      notes: "Legacy destructive behavior is retained only for legacy compatibility; new private media deletion is out of first-slice scope."
+    semantic_divergence: []
+  - name: legacy-song-reanalysis
+    unit: song_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/songs.py:97"
+    contract:
+      method: POST
+      path: /api/songs/{song_id}/analyze
+      request: "Integer path ID; no body"
+      response: "{status: queued, song_id: integer}; background analysis is scheduled"
+      error: "404 Song not found"
+      auth: "None in current implementation"
+    target_contract:
+      method: "POST /api/songs/{song_id}/analyze -> preserve legacy response while v1 analysis uses job resources"
+      notes: "Keep old behavior for existing API callers."
+    semantic_divergence: []
+  - name: legacy-campaigns
+    unit: campaign_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/campaigns.py:14"
+    contract:
+      method: "GET/POST /api/campaigns; GET /api/campaigns/{campaign_id}; PATCH /api/campaigns/{campaign_id}/tasks/{task_id}; DELETE /api/campaigns/{campaign_id}"
+      path: "/api/campaigns"
+      request: "CampaignPlanCreate or task-status dict; integer path IDs"
+      response: "CampaignPlanOut, CampaignTaskOut, lists, or 204"
+      error: "404 missing campaign/task; 400 missing song_id on create"
+      auth: "None in current implementation"
+    target_contract:
+      method: "Preserve all existing campaign route methods, payloads, statuses, and response models"
+      notes: "Do not imply the legacy campaign feature is the approved v1 first-slice product."
+    semantic_divergence: []
+  - name: legacy-artist-profile-and-calendar
+    unit: artist_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/artist.py:14"
+    contract:
+      method: "GET/POST /api/artist/profile; GET/POST /api/artist/calendar"
+      path: "/api/artist/{profile|calendar}"
+      request: "ArtistProfileCreate or ReleaseCalendarEntryCreate"
+      response: "ArtistProfileOut, ReleaseCalendarEntryOut, or lists"
+      error: "404 for missing referenced song/campaign"
+      auth: "None in current implementation"
+    target_contract:
+      method: "Preserve all current artist profile and release calendar routes and response models"
+      notes: "Keep default profile creation behavior for current clients."
+    semantic_divergence: []
+  - name: legacy-run-status
+    unit: run_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/runs.py:11"
+    contract:
+      method: GET
+      path: /api/runs/{run_id}
+      request: "Integer path ID"
+      response: "RunOut with agent outputs"
+      error: "404 Run not found"
+      auth: "None in current implementation"
+    target_contract:
+      method: "GET /api/runs/{run_id} -> same RunOut response"
+      notes: "Maintain for legacy run-detail clients."
+    semantic_divergence: []
+  - name: legacy-dashboard-stats
+    unit: stats_api
+    type: rest
+    stability: frozen
+    source_loc: "backend/routers/stats.py:13"
+    contract:
+      method: GET
+      path: /api/stats
+      request: "No body"
+      response: "StatsOut containing aggregate simulation metrics and campaign/profile fields"
+      error: "FastAPI default errors"
+      auth: "None in current implementation"
+    target_contract:
+      method: "GET /api/stats -> same StatsOut response"
+      notes: "Do not present simulated metrics as measured provider outcomes in new v1 flows."
+    semantic_divergence: []
+  - name: sql-persistence
+    unit: global
+    type: sql
+    stability: must_preserve
+    source_loc: "backend/models.py:23"
+    contract:
+      method: "SQLAlchemy ORM"
+      path: "SQLite tables songs, runs, song_intelligence, audience_segments, content_pieces, marketing_strategies, performance_metrics, optimization_reports, final_strategies, campaign_plans, campaign_tasks, artist_profiles, release_calendar_entries"
+      request: "Integer IDs, JSON fields, existing foreign keys and ORM cascades"
+      response: "Persisted existing records"
+      error: "SQLAlchemy exceptions"
+      auth: "N/A"
+    target_contract:
+      method: "Keep existing SQLite file readable by the legacy adapters; add new schema non-destructively"
+      notes: "No destructive migration or database replacement until the owner approves a data-migration plan."
+    semantic_divergence: []
+  - name: api-root
+    unit: web_entry
+    type: rest
+    stability: target
+    source_loc: "backend/main.py:112"
+    contract:
+      method: GET
+      path: /
+      request: "No body"
+      response: "{app, api, docs}"
+      error: "FastAPI default errors"
+      auth: "None"
+    target_contract:
+      method: "GET / -> API service metadata; Next.js UI runs separately on port 3000"
+      notes: "The previous static UI was replaced by the separately served Next.js app."
+    semantic_divergence:
+      - "Open the frontend on port 3000; the API root no longer serves the browser document."
+  - name: v1-private-audio-analysis
+    unit: song_api
+    type: rest
+    stability: target
+    source_loc: "backend/routers/v1.py:199"
+    contract:
+      method: "POST/GET/PATCH /api/v1/songs; POST/PUT asset upload; POST asset completion; POST analysis; GET job, analysis, intelligence, report"
+      path: "/api/v1"
+      request: "Typed JSON contracts, short-lived upload intent, bounded raw audio stream, and Idempotency-Key for analysis requests"
+      response: "Owner-scoped song, asset, job, versioned intelligence, and evidence-referenced A&R report resources"
+      error: "Stable error envelope with request ID; validation, authorization, asset, worker, and provider failures are safe and machine-readable"
+      auth: "Bearer token on all private routes; health, readiness, and capabilities are public"
+    target_contract:
+      method: "Implement the first milestone in AI_Music_Marketer_API_Specification_v2.md"
+      notes: "Legacy /api/* endpoints remain separately available; media is private and external actions are not enabled."
+    semantic_divergence: []
+  - name: v1-dashboard-agent-pipeline
+    unit: song_api
+    type: rest
+    stability: target
+    source_loc: "backend/routers/v1.py:962"
+    contract:
+      method: "GET/POST /api/v1/analyses/{analysis_id}/agent-pipeline"
+      path: "/api/v1/analyses/{analysis_id}/agent-pipeline"
+      request: "Bearer-authenticated owner-scoped request; POST requires a completed analysis and active rights, audio-processing, and derived-analysis-storage authorization"
+      response: "GET returns the latest saved five-agent output or null; POST runs the deterministic pipeline and returns its output plus explicit heuristic/simulation limitations"
+      error: "Stable safe error envelope for missing analysis, incomplete analysis, inactive consent, or unavailable source data"
+      auth: "Bearer-authenticated and owner-scoped"
+    target_contract:
+      method: "Run the existing deterministic agent sequence from the analyzed track report in the dashboard, persist the latest result per analysis, and allow it to be loaded again."
+      notes: "Use structured audio estimates and only locally derived lyric candidates; do not send audio or lyrics to an external provider. Agent outputs and analytics figures are not actual campaign execution, listener demographics, or forecasts."
+    semantic_divergence: []
+  - name: v1-private-video-render
+    unit: song_api
+    type: rest
+    stability: target
+    source_loc: "backend/routers/v1.py:1032"
+    contract:
+      method: "GET/POST /api/v1/songs/{song_id}/video-renders; GET /api/v1/video-renders/{render_id}; GET /api/v1/video-renders/{render_id}/download"
+      path: "/api/v1"
+      request: "Typed render format and owned verified asset reference; POST requires an Idempotency-Key"
+      response: "Owner-scoped queued/running/succeeded/failed status with stage, progress, scene plan, settings, provenance, validated output metadata, and private MP4 download URL only when ready"
+      error: "Stable safe error envelope for missing rights/consent, unavailable source or renderer, idempotency conflicts, non-ready renders, missing output, and owner mismatch"
+      auth: "Bearer-authenticated private routes; renderer capability discovery remains public"
+    target_contract:
+      method: "Support only approved music-visualizer and full-music-video MP4 formats; return synchronized completed assets without artist-side timeline editing."
+      notes: "Rendering is asynchronous; require active audio-processing and promotional-media consent plus current rights; originals remain immutable; outputs remain private; deterministic FFmpeg graphics are not represented as AI-generated cinematic footage; no publishing occurs."
+    semantic_divergence: []
+  - name: v1-read-only-platform-connections
+    unit: platform_connections
+    type: rest
+    stability: target
+    source_loc: "backend/routers/connections.py:162"
+    contract:
+      method: "GET /api/v1/connections; POST /api/v1/connections/{provider}/oauth/start; GET /api/v1/connections/oauth/callback/{provider}; DELETE /api/v1/connections/{provider}"
+      path: "/api/v1/connections"
+      request: "Authenticated provider selection; OAuth callback uses expiring, one-time, server-stored state; callback code exchanged only server-side"
+      response: "Fixed YouTube/Instagram/Facebook registry with token-free status and account identity; callback redirects to configured APP_FRONTEND_URL"
+      error: "Stable safe consent/configuration errors; callbacks redirect with fixed reasons and do not expose provider response bodies"
+      auth: "Bearer auth for list/start/delete; provider callback bound to an owner through the single-use state record"
+    target_contract:
+      method: "OAuth account connections requesting youtube.readonly, instagram_business_basic, and public_profile only."
+      notes: "Require workspace platform_account_connection consent; store tokens only as Fernet ciphertext under APP_TOKEN_ENCRYPTION_KEY; disconnect/withdrawal clears local tokens; no publishing, Page access, or write permissions."
+    semantic_divergence: []

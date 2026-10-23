@@ -1,0 +1,4 @@
+unit: run_api
+bindings:
+  - {type: route-declaration, name: "GET /api/runs/{run_id}", source_loc: "backend/routers/runs.py:11", target: "get_run", must_appear_in_target: true, notes: "Eager-loads intelligence, segments, content, strategy, metrics, optimization, final strategy."}
+runtime_config: []

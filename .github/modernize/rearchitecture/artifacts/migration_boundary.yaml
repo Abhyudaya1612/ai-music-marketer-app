@@ -1,0 +1,56 @@
+user_intent:
+  raw_request: "Redo this whole project according to the three supplied AI Music Marketer v2 specification files, create the updated structure and required files, and implement the specification."
+  inferred_acceptance:
+    - "Deliver the approved in-place full-stack target structure."
+    - "Preserve existing API contracts for current clients."
+    - "Implement and verify the first private song-upload-to-A&R-report vertical slice."
+    - "Keep the existing SQLite data safe while assessing migration requirements."
+  cleanup_required: true
+  cleanup_evidence: "The user explicitly requested a redo of the whole project and an updated structure."
+strategy: full_rewrite
+runtime_reachable:
+  - backend/main.py
+  - backend/routers/
+  - backend/workers.py
+  - backend/engine/
+  - frontend/
+  - scripts/seed.py
+must_rewrite:
+  - path: backend/main.py
+    reason: "Runtime entrypoint must expose versioned APIs, safe readiness/capabilities, and new frontend routing while preserving legacy paths."
+  - path: backend/routers/
+    reason: "Existing API surface must be aligned to v1 and preserved through compatibility handlers."
+  - path: backend/workers.py
+    reason: "First-slice long-running work requires durable job lifecycle and analysis persistence."
+  - path: backend/engine/
+    reason: "Current heuristic data contracts do not represent measured audio provenance or schema-validated A&R reports."
+  - path: frontend/
+    reason: "The user-approved target is Next.js App Router, React, TypeScript, and Tailwind rather than the current vanilla SPA."
+  - path: tests/
+    reason: "Existing coverage targets the old heuristic pipeline; equivalent contract and vertical-slice coverage is required."
+  - path: requirements.txt
+    reason: "Backend dependencies and worker/media/provider capabilities must be declared for the target."
+  - path: Dockerfile
+    reason: "The target application has separate frontend/backend build and runtime requirements."
+  - path: docker-compose.yml
+    reason: "The local presentation setup must start the target services and preserve persistent local data."
+copy_as_is:
+  - path: AI_Music_Marketer_Complete_Specification_v2.md
+    reason: "Source-of-truth product specification supplied by the user."
+  - path: AI_Music_Marketer_API_Specification_v2.md
+    reason: "Source-of-truth API contract supplied by the user."
+  - path: AI_Music_Marketer_15_Modular_Implementation_Prompts_v2.md
+    reason: "Source-of-truth modular implementation scope supplied by the user."
+legacy_allowed_to_remain:
+  - path: music_marketer.db
+    reason: "Existing SQLite user data is retained untouched until a migration plan is reviewed."
+  - path: backend/models.py legacy tables and response adapters
+    reason: "Needed temporarily to serve preserved legacy API contracts."
+defer_cleanup:
+  - "Remove obsolete heuristic campaign/analytics behavior only after legacy API compatibility and data-retention requirements have an approved transition."
+  - "Assess SQLite-to-PostgreSQL data migration separately; do not rewrite or delete the existing database."
+full_rewrite_reason: "The user explicitly requests a whole-project redo and updated application structure. API compatibility and existing SQLite data remain preservation constraints."
+implementation_rule: >
+  Use the target structure for new implementation. Keep legacy route and persistence
+  adapters only where needed to preserve confirmed contracts and existing data.
+  Do not infer authorization to destroy or migrate the existing SQLite database.

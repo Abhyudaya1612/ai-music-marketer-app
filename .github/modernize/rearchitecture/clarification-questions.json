@@ -1,0 +1,617 @@
+{
+  "schema": "clarification-questions/v1",
+  "generated_at": "2026-10-14T17:50:00Z",
+  "user_input": "I want to redo this whole project in the way specified within the three AI_Music_Marketer files provided within the context. Make sure to create an app with the updated structure with every required file. Also pay in mind the specification file and make sure to implement it correctly.",
+  "title": "AI Music Marketer Full-Stack Rewrite",
+  "assessment_snapshot": {
+    "intro": "The workspace contains an existing FastAPI music-marketing app and three supplied v2 documents defining a revised full-stack product and API:",
+    "bullets": [
+      "Current layout uses a Python/FastAPI backend and a vanilla JavaScript/CSS frontend, with SQLAlchemy/SQLite, a background pipeline, five agent modules, and tests.",
+      "The implementation prompts specify Next.js/React/TypeScript/Tailwind, FastAPI, PostgreSQL with SQLAlchemy/Alembic, private media storage, and a first song-upload-to-A&R-report vertical slice.",
+      "The API document specifies /api/v1 endpoints and an upload → analysis job → Song Intelligence → A&R report workflow; it also prohibits unapproved publishing, distribution, spending, and training on music without rights and consent."
+    ]
+  },
+  "proposed_outcome": "Rebuild the existing app to the supplied v2 product, implementation, and API specifications, with a complete updated project structure and a tested first vertical slice. Preserve the stated privacy, rights, uncertainty-labeling, and human-approval safeguards, and do not perform deployment or consequential external actions.",
+  "scope": [
+    "frontend",
+    "backend",
+    "generic"
+  ],
+  "status": "answered",
+  "questions": [
+    {
+      "id": "F1",
+      "kit": "frontend",
+      "field": "target.framework",
+      "title": "Frontend framework and version",
+      "question": "Confirm the target frontend framework and version. The implementation prompts specify Next.js, React, TypeScript, and Tailwind CSS, but do not pin framework versions.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "Next.js + React + TypeScript + Tailwind CSS (latest stable compatible versions)",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Next.js + React + TypeScript + Tailwind CSS (versions to be selected for compatibility)",
+      "answer": {
+        "value": "Next.js + React + TypeScript + Tailwind CSS (latest stable compatible versions)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Next.js + React + TypeScript + Tailwind CSS (latest stable compatible versions)",
+          "label": "Next.js + React + TypeScript + Tailwind CSS (latest stable compatible versions)"
+        },
+        {
+          "value": "Next.js 15 + React 19 + TypeScript + Tailwind CSS",
+          "label": "Next.js 15 + React 19 + TypeScript + Tailwind CSS"
+        },
+        {
+          "value": "Keep current vanilla JavaScript SPA",
+          "label": "Keep current vanilla JavaScript SPA"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F2",
+      "kit": "frontend",
+      "field": "target.component_library",
+      "title": "UI component library",
+      "question": "Which component or UI library should the rewritten frontend use? The supplied documents specify Tailwind CSS but do not name a component library.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": null,
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "Any is fine",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "shadcn/ui",
+          "label": "shadcn/ui"
+        },
+        {
+          "value": "Radix UI primitives with custom Tailwind components",
+          "label": "Radix UI primitives with custom Tailwind components"
+        },
+        {
+          "value": "No component library; custom Tailwind components",
+          "label": "No component library; custom Tailwind components"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F3",
+      "kit": "frontend",
+      "field": "visual.screenshots",
+      "title": "Current UI references",
+      "question": "Provide paths or URLs to screenshots or recordings of the current UI, or state that no visual reference is available. This helps preserve or intentionally revise existing user-facing flows.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": null,
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "Create one from scratch, make sure its decent as this is just a prototype, but make it user friendly and NOT BLAND",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F4",
+      "kit": "frontend",
+      "field": "visual.design_system",
+      "title": "Design system and tokens",
+      "question": "What design system or token source should guide the rewritten UI? You may provide a design-system link/file or specify a direction such as extracting and matching the existing CSS tokens.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": null,
+      "default": "match existing pixel-by-pixel using extracted CSS custom properties",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "Any is fine",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F5",
+      "kit": "frontend",
+      "field": "compliance.accessibility",
+      "title": "Accessibility target",
+      "question": "Which accessibility standard should the frontend target?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "WCAG 2.1 AA",
+      "default": "WCAG 2.1 AA",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "WCAG 2.1 AA",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "WCAG 2.1 AA",
+          "label": "WCAG 2.1 AA"
+        },
+        {
+          "value": "WCAG 2.2 AA",
+          "label": "WCAG 2.2 AA"
+        },
+        {
+          "value": "No formal standard",
+          "label": "No formal standard"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F6",
+      "kit": "frontend",
+      "field": "compatibility.browsers",
+      "title": "Browser compatibility",
+      "question": "Which browser/runtime targets should the app support?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": "Modern evergreen browsers (latest 2 major versions)",
+      "default": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Modern evergreen browsers (latest 2 major versions)",
+          "label": "Modern evergreen browsers (latest 2 major versions)"
+        },
+        {
+          "value": "Chrome and Edge only",
+          "label": "Chrome and Edge only"
+        },
+        {
+          "value": "Include older browsers (specify in Other)",
+          "label": "Include older browsers (specify in Other)"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F7",
+      "kit": "frontend",
+      "field": "responsive.breakpoints",
+      "title": "Responsive strategy",
+      "question": "What responsive layout strategy should the rewritten UI use?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "Mobile-first; derive breakpoints from the existing UI",
+      "default": "mobile-first using existing breakpoints detected from codebase",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "Desktop-only",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Mobile-first; derive breakpoints from the existing UI",
+          "label": "Mobile-first; derive breakpoints from the existing UI"
+        },
+        {
+          "value": "Desktop-first",
+          "label": "Desktop-first"
+        },
+        {
+          "value": "Desktop-only",
+          "label": "Desktop-only"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F8",
+      "kit": "frontend",
+      "field": "i18n.locales",
+      "title": "Languages and locales",
+      "question": "Which interface locales are in scope? Enter locale codes, or state that only English is needed for this release.",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": null,
+      "default": "preserve current locales; keep existing i18n library if present",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "English only",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F9",
+      "kit": "frontend",
+      "field": "state_mgmt.preference",
+      "title": "Frontend state management",
+      "question": "Do you have a preference for client/server state management?",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": "Minimal component state plus a server-state library",
+      "default": "preserve existing pattern if identifiable; otherwise recommend minimal (component state + server-state library)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "Framework-native state and server data fetching",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Minimal component state plus a server-state library",
+          "label": "Minimal component state plus a server-state library"
+        },
+        {
+          "value": "Framework-native state and server data fetching",
+          "label": "Framework-native state and server data fetching"
+        },
+        {
+          "value": "Redux Toolkit",
+          "label": "Redux Toolkit"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F10",
+      "kit": "frontend",
+      "field": "routing.preference",
+      "title": "Frontend routing",
+      "question": "Do you have a routing preference for the frontend?",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": "Next.js App Router",
+      "default": "use the de-facto router for the chosen target framework",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "Next.js App Router",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Next.js App Router",
+          "label": "Next.js App Router"
+        },
+        {
+          "value": "Next.js Pages Router",
+          "label": "Next.js Pages Router"
+        },
+        {
+          "value": "No preference; use framework default",
+          "label": "No preference; use framework default"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B1",
+      "kit": "backend",
+      "field": "target.framework",
+      "title": "Backend framework and version",
+      "question": "Confirm the target backend framework and version. The supplied documents specify Python and FastAPI but do not pin a FastAPI version.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "FastAPI (latest stable compatible version)",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Python/FastAPI; exact version to be selected for compatibility",
+      "answer": {
+        "value": "FastAPI (latest stable compatible version)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "FastAPI (latest stable compatible version)",
+          "label": "FastAPI (latest stable compatible version)"
+        },
+        {
+          "value": "FastAPI 0.110",
+          "label": "FastAPI 0.110"
+        },
+        {
+          "value": "Keep current FastAPI version if compatible",
+          "label": "Keep current FastAPI version if compatible"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B2",
+      "kit": "backend",
+      "field": "api.contract_preservation",
+      "title": "Legacy API compatibility",
+      "question": "How should existing API clients be treated while implementing the new /api/v1 contract?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "can break with versioning",
+      "default": "must preserve",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "must preserve",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "must preserve",
+          "label": "Preserve existing endpoints and behavior; provide compatibility as needed"
+        },
+        {
+          "value": "can break with versioning",
+          "label": "Use the new /api/v1 contract; version or deprecate old routes as needed"
+        },
+        {
+          "value": "can break",
+          "label": "No existing clients need protection; redesign the API"
+        },
+        {
+          "value": "partial: specify endpoints to preserve",
+          "label": "Preserve only specific endpoints (specify in Other)"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B3",
+      "kit": "backend",
+      "field": "data.migration_strategy",
+      "title": "Database migration strategy",
+      "question": "How should existing SQLite song and campaign data be handled when moving toward the PostgreSQL/Alembic structure in the implementation prompts?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "TBD / assess in research phase",
+      "default": "TBD / assess in research phase",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "TBD / assess in research phase",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "in-place",
+          "label": "Migrate the existing database in place"
+        },
+        {
+          "value": "dual-write",
+          "label": "Run old and new schemas side-by-side with dual writes"
+        },
+        {
+          "value": "new schema",
+          "label": "Start a new schema and migrate existing data with an explicit ETL"
+        },
+        {
+          "value": "no migration",
+          "label": "Keep the existing database/data untouched; implement the new app separately"
+        },
+        {
+          "value": "TBD / assess in research phase",
+          "label": "Assess the data and recommend a safe migration plan before implementation"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B4",
+      "kit": "backend",
+      "field": "auth.framework",
+      "title": "Authentication approach",
+      "question": "What authentication and authorization approach should be used? The API specification requires authorization for private resources and says to inspect any existing identity mechanism before choosing one.",
+      "importance": "recommended",
+      "impact": 4,
+      "recommended": "Preserve existing auth mechanism; inspect the codebase",
+      "default": "preserve existing auth mechanism; detect from codebase",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "preserve existing auth mechanism; detect from codebase",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Preserve existing auth mechanism; inspect the codebase",
+          "label": "Preserve existing auth mechanism; inspect the codebase"
+        },
+        {
+          "value": "Implement a documented local-development auth approach; defer production identity",
+          "label": "Implement a documented local-development auth approach; defer production identity"
+        },
+        {
+          "value": "Use an external identity provider (specify in Other)",
+          "label": "Use an external identity provider (specify in Other)"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B5",
+      "kit": "backend",
+      "field": "nfr.sla",
+      "title": "Service-level targets",
+      "question": "What latency, throughput, and availability targets should the first release meet? You may state that this is a local-development milestone with no production SLA yet.",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": null,
+      "default": "match current production baseline; no regression",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "This is intended for a presentation, but the zip file needs to be shared and accessed on other devices",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G1",
+      "kit": "generic",
+      "field": "success.definition",
+      "title": "Definition of done",
+      "question": "What outcome defines success for this rewrite? Specify the required features and how they should be verified.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": "feature parity with the current system; all existing user-facing behaviors preserved",
+      "prefilled": true,
+      "prefilled_value": "Implement the supplied v2 product, modular implementation, and API specifications; create the complete updated structure and deliver/test the first song-upload → audio-analysis → Song Intelligence → A&R report vertical slice, while preserving required safeguards.",
+      "answer": {
+        "value": "Implement the supplied v2 product, modular implementation, and API specifications; create the complete updated structure and deliver/test the first song-upload → audio-analysis → Song Intelligence → A&R report vertical slice, while preserving required safeguards.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G2",
+      "kit": "generic",
+      "field": "out_of_scope",
+      "title": "Out-of-scope boundaries",
+      "question": "Confirm any work that must remain out of scope. The supplied documents state that later roadmap work, production deployment, real external account connections, publishing, distribution, advertising spend, and model training are not authorized by this request.",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": null,
+      "default": "no explicit exclusions; agent infers from project structure",
+      "prefilled": true,
+      "prefilled_value": "Do not implement later roadmap features beyond the first vertical slice. Do not deploy, connect real external accounts, publish or distribute content, spend money, or train on uploaded music without necessary rights and consent.",
+      "answer": {
+        "value": "Do not implement later roadmap features beyond the first vertical slice. Do not deploy, connect real external accounts, publish or distribute content, spend money, or train on uploaded music without necessary rights and consent.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G3",
+      "kit": "generic",
+      "field": "existing_tests.posture",
+      "title": "Existing test policy",
+      "question": "How should existing tests be treated during the rewrite?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "can rewrite",
+      "default": "must pass",
+      "prefilled": true,
+      "prefilled_value": "must pass; add/update tests alongside implementation and do not claim unrun checks passed",
+      "answer": {
+        "value": "can rewrite",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "must pass",
+          "label": "All existing tests must pass, with equivalent coverage for rewritten code"
+        },
+        {
+          "value": "can rewrite",
+          "label": "Tests may be replaced by equivalent coverage for the new structure"
+        },
+        {
+          "value": "ignore",
+          "label": "Do not preserve existing tests; write a new suite"
+        },
+        {
+          "value": "partial: specify required suites",
+          "label": "Only specified suites must pass (specify in Other)"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G4",
+      "kit": "generic",
+      "field": "target.output_location",
+      "title": "Rewrite output location",
+      "question": "Where should the rewritten application files go?",
+      "importance": "required",
+      "impact": 4,
+      "recommended": null,
+      "default": "new sibling directory: ai-music-marketer-app-new",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "in-place",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "ai-music-marketer-app-new",
+          "label": "Create a sibling directory named ai-music-marketer-app-new"
+        },
+        {
+          "value": "in-place",
+          "label": "Replace/update the existing project in this workspace"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G5",
+      "kit": "generic",
+      "field": "constraints.additional",
+      "title": "Additional constraints",
+      "question": "Add any requirements, exclusions, dependencies, compliance rules, or operational constraints not covered above.",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": null,
+      "default": "None beyond the decisions listed in this specification.",
+      "prefilled": true,
+      "prefilled_value": "None beyond the decisions listed in this specification.",
+      "answer": {
+        "value": "None beyond the decisions listed in this specification.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    }
+  ]
+}

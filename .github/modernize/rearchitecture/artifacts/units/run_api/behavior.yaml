@@ -1,0 +1,20 @@
+unit: run_api
+branches:
+  - source_loc: "backend/routers/runs.py:11"
+    condition: "Run ID does not exist."
+    behavior: "Return 404 Run not found."
+    must_preserve: true
+side_effects: []
+error_paths:
+  - source_loc: "backend/routers/runs.py:11"
+    trigger: "Run lookup misses."
+    outcome: "HTTP 404."
+    contract: "404 Run not found"
+    must_preserve: true
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "backend/routers/runs.py:11"
+    scope: "Read-only query eagerly loads all persisted run output relationships."
+    isolation: "Database default"
+    must_preserve: true

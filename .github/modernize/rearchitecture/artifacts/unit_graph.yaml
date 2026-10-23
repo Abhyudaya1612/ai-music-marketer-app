@@ -1,0 +1,185 @@
+units:
+  - name: web_entry
+    trigger: route
+    trigger_detail: "GET /api/health, GET /api/v1/health, and GET /"
+    source_anchors:
+      - {path: backend/main.py, line: 106}
+      - {path: backend/main.py, line: 112}
+    exported_signature:
+      - {method: "GET /api/health -> JSON {status, app, environment}", source_loc: "backend/main.py:106", stability: must_preserve}
+      - {method: "GET /api/v1/health -> JSON {status}", source_loc: "backend/routers/v1.py:112", stability: must_preserve}
+      - {method: "GET / -> API service metadata; Next.js UI runs separately on port 3000", source_loc: "backend/main.py:112", stability: must_preserve}
+    dynamic_entrypoints: []
+    depends_on: []
+    shared_refs:
+      - {module: application_settings, used_fields: [app_name, environment, cors_origin_list]}
+  - name: frontend_spa
+    trigger: page
+    trigger_detail: "Next.js App Router studio: private access, artist onboarding/profile, dashboard, track upload, analysis/report, video renders, and read-only social account connections"
+    source_anchors:
+      - {path: frontend/app/page.tsx}
+      - {path: frontend/lib/api.ts}
+    exported_signature: []
+    dynamic_entrypoints: []
+    depends_on:
+      - {unit: song_api, via: "/api/v1/artist/profile, /api/v1/consents, /api/v1/rights/declarations, cursor-paginated /api/v1/songs, and video-render list/status/download routes"}
+      - {unit: analysis_worker, via: "polls /api/v1/jobs, /api/v1/analyses, and /api/v1/video-renders"}
+      - {unit: platform_connections, via: "reads connection status, grants separate consent, initiates provider OAuth, and disconnects accounts"}
+    shared_refs: []
+  - name: song_api
+    trigger: route
+    trigger_detail: "Legacy song routes and v1 owner-scoped artist profile, song catalog, private uploads, verification, analysis, audience hypotheses, release plans, video renders, and capability discovery"
+    source_anchors:
+      - {path: backend/routers/songs.py, line: 25}
+      - {path: backend/routers/v1.py, line: 255}
+      - {path: backend/routers/v1.py, line: 288}
+      - {path: backend/routers/v1.py, line: 352}
+      - {path: backend/routers/v1.py, line: 390}
+      - {path: backend/routers/v1.py, line: 469}
+      - {path: backend/routers/v1.py, line: 646}
+      - {path: backend/routers/v1.py, line: 962}
+      - {path: backend/routers/v1.py, line: 309}
+      - {path: backend/routers/v1.py, line: 1032}
+    exported_signature:
+      - {method: "POST /api/songs -> SongOut (201)", source_loc: "backend/routers/songs.py:25", stability: frozen}
+      - {method: "GET /api/songs -> list[SongOut]", source_loc: "backend/routers/songs.py:37", stability: frozen}
+      - {method: "GET /api/songs/{song_id} -> SongDetailOutWithCampaigns", source_loc: "backend/routers/songs.py:42", stability: frozen}
+      - {method: "POST /api/songs/{song_id}/analyze -> dict", source_loc: "backend/routers/songs.py:97", stability: frozen}
+      - {method: "POST /api/v1/songs/{song_id}/assets/upload-intent -> UploadIntentResponse", source_loc: "backend/routers/v1.py:469", stability: target}
+      - {method: "GET /api/v1/artist/profile -> ArtistProfileOut | null", source_loc: "backend/routers/v1.py:255", stability: target}
+      - {method: "PUT /api/v1/artist/profile -> ArtistProfileOut", source_loc: "backend/routers/v1.py:266", stability: target}
+      - {method: "GET /api/v1/consents -> ConsentListOut", source_loc: "backend/routers/v1.py:288", stability: target}
+      - {method: "POST /api/v1/consents -> ConsentOut", source_loc: "backend/routers/v1.py:302", stability: target}
+      - {method: "POST /api/v1/consents/{consent_id}/withdraw -> ConsentWithdrawalOut", source_loc: "backend/routers/v1.py:324", stability: target}
+      - {method: "GET/POST /api/v1/rights/declarations -> RightsDeclarationListOut / RightsDeclarationOut", source_loc: "backend/routers/v1.py:352", stability: target}
+      - {method: "GET /api/v1/songs?limit={limit}&cursor={cursor} -> SongListOut", source_loc: "backend/routers/v1.py:390", stability: target}
+      - {method: "POST /api/v1/songs/{song_id}/analyses -> AnalysisAccepted", source_loc: "backend/routers/v1.py:646", stability: target}
+      - {method: "GET/POST /api/v1/analyses/{analysis_id}/agent-pipeline -> AgentPipelineOut | null / AgentPipelineOut", source_loc: "backend/routers/v1.py:948", stability: target}
+      - {method: "GET /api/v1/analyses/{analysis_id}/audience-hypotheses -> AudienceHypothesesOut", source_loc: "backend/routers/v1.py:810", stability: target}
+      - {method: "GET /api/v1/songs/{song_id}/release-plans -> ReleasePlanListOut", source_loc: "backend/routers/v1.py:856", stability: target}
+      - {method: "POST /api/v1/release-plans -> ReleasePlanOut", source_loc: "backend/routers/v1.py:871", stability: target}
+      - {method: "GET/PATCH /api/v1/release-plans/{plan_id} -> ReleasePlanOut", source_loc: "backend/routers/v1.py:926", stability: target}
+      - {method: "POST /api/v1/release-plans/{plan_id}/approve -> ReleasePlanOut", source_loc: "backend/routers/v1.py:969", stability: target}
+      - {method: "GET /api/v1/capabilities -> renderer and integration availability", source_loc: "backend/routers/v1.py:309", stability: target}
+      - {method: "GET /api/v1/songs/{song_id}/video-renders -> VideoRenderListOut", source_loc: "backend/routers/v1.py:1032", stability: target}
+      - {method: "POST /api/v1/songs/{song_id}/video-renders -> VideoRenderOut (202)", source_loc: "backend/routers/v1.py:1051", stability: target}
+      - {method: "GET /api/v1/video-renders/{render_id} -> VideoRenderOut", source_loc: "backend/routers/v1.py:1164", stability: target}
+      - {method: "GET /api/v1/video-renders/{render_id}/download -> private video/mp4", source_loc: "backend/routers/v1.py:1179", stability: target}
+    dynamic_entrypoints: []
+    depends_on:
+      - {unit: analysis_worker, via: "FastAPI BackgroundTasks → execute_pipeline(song_id)"}
+      - {unit: campaign_api, via: "shared CampaignPlan persistence"}
+    shared_refs:
+      - {module: orm_models, used_fields: [Song, Run, CampaignPlan, CampaignTask]}
+      - {module: api_schemas, used_fields: [SongCreate, SongOut, CampaignPlanCreate]}
+      - {module: database_session, used_fields: [get_db]}
+      - {module: versioned_song_domain, used_fields: [StudioSong, ArtistWorkspaceProfile, RightsDeclaration, ConsentRecord, MediaAsset, AnalysisJob, SongAnalysis, SongAnalysisLyrics, AgentPipelineRun, AnalysisReport, ReleasePlan, VideoRender, PlatformConnection, PlatformOAuthState, IdempotencyRecord, ArtistProfileUpsert, ArtistProfileOut, ConsentCreate, ConsentOut, ConsentListOut, ConsentWithdrawalOut, RightsDeclarationCreate, RightsDeclarationOut, RightsDeclarationListOut, SongListOut, SongIntelligenceOut, AgentPipelineOut, AudienceHypothesesOut, ReleasePlanCreate, ReleasePlanPatch, ReleasePlanTaskOut, ReleasePlanOut, ReleasePlanListOut, VideoRenderRequest, VideoRenderOut, VideoRenderListOut, ARReportOut]}
+      - {module: consent_state, used_fields: [has_active_consent]}
+      - {module: audience_hypotheses, used_fields: [build_audience_hypotheses]}
+      - {module: release_plan_builder, used_fields: [build_release_tasks]}
+      - {module: application_settings, used_fields: [api_token, auth_user_id, media_storage_path, max_upload_bytes, max_audio_duration_seconds, ffmpeg_path, ffprobe_path]}
+      - {module: private_media_storage, used_fields: [render_output_path]}
+      - {module: local_video_renderer, used_fields: [renderer_capabilities, build_scene_plan]}
+      - {module: platform_oauth, used_fields: [provider_is_configured]}
+  - name: platform_connections
+    trigger: route
+    trigger_detail: "Bearer-authenticated owner-scoped connection listing, consent-gated OAuth starts, one-time provider callbacks, and local token removal for YouTube, Instagram, and Facebook"
+    source_anchors:
+      - {path: backend/routers/connections.py, line: 162}
+      - {path: backend/routers/connections.py, line: 176}
+      - {path: backend/routers/connections.py, line: 206}
+      - {path: backend/services/platform_oauth.py, line: 123}
+      - {path: backend/services/platform_oauth.py, line: 218}
+    exported_signature:
+      - {method: "GET /api/v1/connections -> PlatformConnectionListOut", source_loc: "backend/routers/connections.py:162", stability: target}
+      - {method: "POST /api/v1/connections/{provider}/oauth/start -> OAuthStartOut", source_loc: "backend/routers/connections.py:176", stability: target}
+      - {method: "GET /api/v1/connections/oauth/callback/{provider} -> 303 frontend redirect", source_loc: "backend/routers/connections.py:206", stability: target}
+      - {method: "DELETE /api/v1/connections/{provider} -> 204", source_loc: "backend/routers/connections.py:240", stability: target}
+    dynamic_entrypoints: []
+    depends_on:
+      - {unit: song_api, via: "requires active workspace platform_account_connection consent; withdrawal clears stored credentials and pending state"}
+    shared_refs:
+      - {module: database_session, used_fields: [get_db]}
+      - {module: versioned_song_domain, used_fields: [PlatformConnection, PlatformOAuthState, PlatformConnectionOut, PlatformConnectionListOut, OAuthStartOut]}
+      - {module: consent_state, used_fields: [has_active_consent]}
+      - {module: platform_oauth, used_fields: [PLATFORM_PROVIDERS, provider_is_configured, build_authorization_url, exchange_authorization_code, encrypt_token]}
+      - {module: application_settings, used_fields: [frontend_url]}
+  - name: campaign_api
+    trigger: route
+    trigger_detail: "GET/POST /api/campaigns; GET /api/campaigns/{campaign_id}; PATCH /api/campaigns/{campaign_id}/tasks/{task_id}; DELETE /api/campaigns/{campaign_id}"
+    source_anchors:
+      - {path: backend/routers/campaigns.py, line: 14}
+    exported_signature:
+      - {method: "GET /api/campaigns -> list[CampaignPlanOut]", source_loc: "backend/routers/campaigns.py:14", stability: frozen}
+      - {method: "POST /api/campaigns -> CampaignPlanOut (201)", source_loc: "backend/routers/campaigns.py:37", stability: frozen}
+    dynamic_entrypoints: []
+    depends_on: []
+    shared_refs:
+      - {module: orm_models, used_fields: [Song, CampaignPlan, CampaignTask]}
+      - {module: api_schemas, used_fields: [CampaignPlanCreate, CampaignPlanOut, CampaignTaskOut]}
+      - {module: database_session, used_fields: [get_db]}
+  - name: artist_api
+    trigger: route
+    trigger_detail: "GET/POST /api/artist/profile and GET/POST /api/artist/calendar"
+    source_anchors:
+      - {path: backend/routers/artist.py, line: 14}
+    exported_signature:
+      - {method: "GET /api/artist/profile -> ArtistProfileOut", source_loc: "backend/routers/artist.py:14", stability: frozen}
+      - {method: "POST /api/artist/calendar -> ReleaseCalendarEntryOut (201)", source_loc: "backend/routers/artist.py:52", stability: frozen}
+    dynamic_entrypoints: []
+    depends_on: []
+    shared_refs:
+      - {module: orm_models, used_fields: [Song, CampaignPlan, ArtistProfile, ReleaseCalendarEntry]}
+      - {module: api_schemas, used_fields: [ArtistProfileCreate, ReleaseCalendarEntryCreate]}
+      - {module: database_session, used_fields: [get_db]}
+  - name: run_api
+    trigger: route
+    trigger_detail: "GET /api/runs/{run_id}"
+    source_anchors:
+      - {path: backend/routers/runs.py, line: 11}
+    exported_signature:
+      - {method: "GET /api/runs/{run_id} -> RunOut", source_loc: "backend/routers/runs.py:11", stability: frozen}
+    dynamic_entrypoints: []
+    depends_on: [ {unit: analysis_worker, via: "reads Run and run output records"} ]
+    shared_refs:
+      - {module: orm_models, used_fields: [Run, SongIntelligenceRow, AudienceSegmentRow, ContentPieceRow, MarketingStrategyRow, PerformanceMetricsRow, OptimizationReportRow, FinalStrategyRow]}
+      - {module: api_schemas, used_fields: [RunOut]}
+      - {module: database_session, used_fields: [get_db]}
+  - name: stats_api
+    trigger: route
+    trigger_detail: "GET /api/stats"
+    source_anchors:
+      - {path: backend/routers/stats.py, line: 13}
+    exported_signature:
+      - {method: "GET /api/stats -> StatsOut", source_loc: "backend/routers/stats.py:13", stability: frozen}
+    dynamic_entrypoints: []
+    depends_on:
+      - {unit: song_api, via: "aggregates song records"}
+      - {unit: campaign_api, via: "aggregates campaign records"}
+      - {unit: artist_api, via: "reads artist goals"}
+    shared_refs:
+      - {module: orm_models, used_fields: [Song, PerformanceMetricsRow, AudienceSegmentRow, CampaignPlan, ArtistProfile]}
+      - {module: api_schemas, used_fields: [StatsOut]}
+      - {module: database_session, used_fields: [get_db]}
+  - name: analysis_worker
+    trigger: job
+    trigger_detail: "Legacy execute_pipeline(song_id) and v1 asset-verification/song-analysis jobs"
+    source_anchors:
+      - {path: backend/workers.py, line: 15}
+      - {path: backend/services/job_runner.py, line: 45}
+      - {path: backend/services/job_runner.py, line: 85}
+      - {path: backend/services/job_runner.py, line: 110}
+      - {path: backend/services/job_runner.py, line: 283}
+    exported_signature:
+      - {method: "execute_pipeline(song_id: int, db: Session | None = None) -> int", source_loc: "backend/workers.py:15", stability: must_preserve}
+      - {method: "run_v1_job(job_id: str, generate_ai_report: bool = True, allow_third_party_ai: bool = False) -> None", source_loc: "backend/services/job_runner.py:45", stability: target}
+    dynamic_entrypoints: []
+    depends_on: []
+    shared_refs:
+      - {module: orm_models, used_fields: [Song, Run, SongIntelligenceRow, AudienceSegmentRow, ContentPieceRow, MarketingStrategyRow, PerformanceMetricsRow, OptimizationReportRow, FinalStrategyRow]}
+      - {module: database_session, used_fields: [SessionLocal]}
+      - {module: application_settings, used_fields: [database_url, media_storage_path, max_audio_duration_seconds, ffmpeg_path, ffprobe_path, ai_provider, openrouter_api_key, openrouter_model]}
+      - {module: versioned_song_domain, used_fields: [StudioSong, RightsDeclaration, ConsentRecord, MediaAsset, AnalysisJob, SongAnalysis, AnalysisReport, VideoRender]}
+      - {module: consent_state, used_fields: [has_active_consent]}
+      - {module: private_media_storage, used_fields: [original_path, render_output_path]}
+      - {module: local_video_renderer, used_fields: [render_motion_graphics]}

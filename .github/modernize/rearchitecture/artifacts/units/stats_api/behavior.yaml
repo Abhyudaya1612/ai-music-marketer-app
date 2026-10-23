@@ -1,0 +1,15 @@
+unit: stats_api
+branches:
+  - source_loc: "backend/routers/stats.py:13"
+    condition: "No primary audience affinity/profile/release dates are available."
+    behavior: "Return null top_platform, empty artist_goals, and zero release-window average as applicable."
+    must_preserve: true
+side_effects: []
+error_paths: []
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "backend/routers/stats.py:13"
+    scope: "Read-only aggregate queries across songs, metrics, audience, campaigns, releases, and artist profile."
+    isolation: "Database default"
+    must_preserve: true
