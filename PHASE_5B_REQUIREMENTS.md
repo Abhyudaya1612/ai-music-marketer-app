@@ -1,5 +1,7 @@
 # Phase 5b Requirements: Genre-Based Themed Lyric Videos with Always-Visible Lyrics
 
+> Contributor: deepakrathod750
+
 ## Summary
 
 Extend the existing lyric video generation system to move beyond static waveform/spectrum visualizers and create rich, genre-specific themed lyric videos where lyrics are always visible throughout the entire video duration. Each of 50+ music genres receives a tailored visual theme with unique color palettes, visualizer effects, animation styles, and typography. Videos will synchronize lyrics to audio timing with large, readable text that never disappears, styled appropriately for each genre's aesthetic.

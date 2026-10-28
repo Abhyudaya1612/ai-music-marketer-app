@@ -1,5 +1,7 @@
 # Phase 5b: Enhanced Genre-Themed Lyrics Visualizer
 
+> Contributor: deepakrathod750
+
 ## Overview
 
 Phase 5b enhances the video rendering system with genre-aware theming and always-visible lyrics overlay. Songs now render with visualizers and lyrics that adapt to the musical genre, providing a professional music video experience tailored to each track's style.
